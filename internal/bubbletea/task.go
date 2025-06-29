@@ -116,9 +116,29 @@ func getTaskListItems(c *database.Client) ([]list.Item, error) {
 	return l, nil
 }
 
+func getTaskListItemsByCategory(c *database.Client, id int64) ([]list.Item, error) {
+	var l []list.Item
+
+	tasks, err := c.QueryTasksFromCategory(id)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, v := range tasks {
+		var i taskListItem
+		i.ID = v.ID
+		i.Tit = v.Title
+		i.Stat = v.Status
+		i.Desc = v.Description
+
+		l = append(l, i)
+	}
+	return l, nil
+}
+
 func (m model) getTaskItemID() (int64, error) {
-	i := m.lists[0].Index()
-	items := m.lists[0].Items()
+	i := m.lists[m.listIndex].Index()
+	items := m.lists[m.listIndex].Items()
 
 	task, ok := items[i].(taskListItem)
 	if !ok {
@@ -130,71 +150,71 @@ func (m model) getTaskItemID() (int64, error) {
 func (m model) deleteTask() (tea.Model, tea.Cmd) {
 	id, err := m.getTaskItemID()
 	if err != nil {
-		return m, m.lists[0].NewStatusMessage(fmt.Sprintf("%v", err))
+		return m, m.lists[m.listIndex].NewStatusMessage(fmt.Sprintf("%v", err))
 	}
 
 	err = m.dbClient.DeleteTask(id)
 	if err != nil {
-		return m, m.lists[0].NewStatusMessage("Failed to delete task")
+		return m, m.lists[m.listIndex].NewStatusMessage("Failed to delete task")
 	}
 
 	if err = m.updateListItems(); err != nil {
-		return m, m.lists[0].NewStatusMessage("Task deleted but failed to update task.")
+		return m, m.lists[m.listIndex].NewStatusMessage("Task deleted but failed to update task.")
 	}
 
-	return m, m.lists[0].NewStatusMessage("Deleted task")
+	return m, m.lists[m.listIndex].NewStatusMessage("Deleted task")
 }
 
 func (m model) completeTask() (tea.Model, tea.Cmd) {
 	id, err := m.getTaskItemID()
 	if err != nil {
-		return m, m.lists[0].NewStatusMessage(fmt.Sprintf("%v", err))
+		return m, m.lists[m.listIndex].NewStatusMessage(fmt.Sprintf("%v", err))
 	}
 
 	_, err = m.dbClient.CompleteTask(int(id))
 	if err != nil {
-		return m, m.lists[0].NewStatusMessage("Failed to mark task as completed")
+		return m, m.lists[m.listIndex].NewStatusMessage("Failed to mark task as completed")
 	}
 
 	if err = m.updateListItems(); err != nil {
-		return m, m.lists[0].NewStatusMessage("Task marked as completed but failed to update task list.")
+		return m, m.lists[m.listIndex].NewStatusMessage("Task marked as completed but failed to update task list.")
 	}
 
-	return m, m.lists[0].NewStatusMessage("Task completed")
+	return m, m.lists[m.listIndex].NewStatusMessage("Task marked as 'Done'")
 }
 
 func (m model) startTask() (tea.Model, tea.Cmd) {
 	id, err := m.getTaskItemID()
 	if err != nil {
-		return m, m.lists[0].NewStatusMessage(fmt.Sprintf("%v", err))
+		return m, m.lists[m.listIndex].NewStatusMessage(fmt.Sprintf("%v", err))
 	}
 
 	_, err = m.dbClient.StartTask(int(id))
 	if err != nil {
-		return m, m.lists[0].NewStatusMessage("Failed to mark task as todo")
+		return m, m.lists[m.listIndex].NewStatusMessage("Failed to mark task")
 	}
 
 	if err = m.updateListItems(); err != nil {
-		return m, m.lists[0].NewStatusMessage("Task reset but failed to update task list.")
+		return m, m.lists[m.listIndex].NewStatusMessage("Task started but failed to update task list.")
 	}
 
-	return m, m.lists[0].NewStatusMessage("Task marked as to-do")
+	return m, m.lists[m.listIndex].NewStatusMessage("Task marked as 'Doing'")
 }
 
 func (m model) resetTask() (tea.Model, tea.Cmd) {
 	id, err := m.getTaskItemID()
 	if err != nil {
-		return m, m.lists[0].NewStatusMessage(fmt.Sprintf("%v", err))
+		return m, m.lists[m.listIndex].NewStatusMessage(fmt.Sprintf("%v", err))
 	}
 
 	_, err = m.dbClient.ResetTask(int(id))
 	if err != nil {
-		return m, m.lists[0].NewStatusMessage("Failed to mark task as todo")
+		return m, m.lists[m.listIndex].NewStatusMessage("Failed to mark task as todo")
 	}
 
 	if err = m.updateListItems(); err != nil {
-		return m, m.lists[0].NewStatusMessage("Task reset but failed to update task list.")
+		return m, m.lists[m.listIndex].NewStatusMessage("Task reset but failed to update task list.")
 	}
 
-	return m, m.lists[0].NewStatusMessage("Task marked as to-do")
+	return m, m.lists[m.listIndex].NewStatusMessage("Task marked as 'Todo'")
 }

@@ -26,8 +26,14 @@ type Categories []Category
 type CategoryTable map[string]int64
 
 const (
-	MaxNumberOfCategories int    = 256
-	DefaultCategoryName   string = "Default"
+	DefaultCategoryName string = "Default"
 )
 
-var CatTable = make(CategoryTable, MaxNumberOfCategories)
+func GetCategoryName(cats Categories, id int64) string {
+	for _, v := range cats {
+		if id == v.ID {
+			return v.Name
+		}
+	}
+	return "N/A"
+}

@@ -39,6 +39,7 @@ import (
 var (
 	configFile   string
 	databaseFile string
+	categoryID   int64
 	conf         config.Config
 
 	rootCmd = &cobra.Command{
@@ -56,7 +57,12 @@ var (
 				return err
 			}
 
-			bubbletea.Run(client)
+			cats, err := client.QueryCategories()
+			if err != nil {
+				return fmt.Errorf("failed to find any categories in the database, %v", err)
+			}
+
+			bubbletea.Run(client, cats, categoryID)
 			return nil
 		},
 	}
@@ -75,6 +81,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "Configuration file location")
 	rootCmd.PersistentFlags().StringVar(&databaseFile, "database", config.SetDefault().Database.Path, "Database file path")
+	rootCmd.PersistentFlags().Int64VarP(&categoryID, "category", "c", 1, "Category to list tasks from")
 
 	viper.BindPFlag("database.path", rootCmd.PersistentFlags().Lookup("database"))
 

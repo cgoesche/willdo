@@ -57,7 +57,7 @@ func (c *Client) DeleteTask(id int64) error {
 func (c *Client) DeleteTasksFromCategory(cat int64) error {
 	var tasks models.Tasks
 	// Retrieve all tasks from the specified category
-	tasks, err := c.queryTasksFromCategory(cat)
+	tasks, err := c.QueryTasksFromCategory(cat)
 	if err != nil {
 		return err
 	}
@@ -93,7 +93,7 @@ func (c *Client) QueryAllTasks() (models.Tasks, error) {
 	return tasks, nil
 }
 
-func (c *Client) queryTasksFromCategory(cat int64) (models.Tasks, error) {
+func (c *Client) QueryTasksFromCategory(cat int64) (models.Tasks, error) {
 	var tasks models.Tasks
 
 	q := fmt.Sprintf("SELECT * FROM %s WHERE category = %d", TaskTableName, cat)

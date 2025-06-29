@@ -32,5 +32,4 @@ are you looking for the entire commit history ?`,
 
 func init() {
 	ListCmd.AddCommand(categoryCmd)
-	ListCmd.AddCommand(taskCmd)
 }
