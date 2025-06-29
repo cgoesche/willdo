@@ -72,9 +72,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	var s StatusBar
-	statusBar := s.RenderStatusBar(m.lists[0].Items())
-	content := docStyle.Render(m.lists[0].View() + "\n" + statusBar)
+	var s StatsBar
+	statsBar := s.RenderStatsBar(m.lists[0].Items())
+	content := docStyle.Render(m.lists[0].View() + "\n" + statsBar)
 
 	return content
 }
@@ -98,6 +98,8 @@ func Run(client *database.Client) {
 	m.lists[0].Title = "Default"
 	m.lists[0].Styles = styles.DefaultStyles()
 	m.lists[0].StatusMessageLifetime = 3 * time.Second
+	m.lists[0].SetShowFilter(false)
+	m.lists[0].SetFilteringEnabled(false)
 
 	p := tea.NewProgram(m)
 	_, err = p.Run()

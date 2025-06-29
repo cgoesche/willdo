@@ -10,18 +10,18 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type StatusBar struct {
+type StatsBar struct {
 	Todo     int
 	Doing    int
 	Done     int
 	Progress float64
 }
 
-func (s *StatusBar) UpdateStatusBar() error {
+func (s *StatsBar) UpdateStatsBar() error {
 	return nil
 }
 
-func (s *StatusBar) storeTaskStates(l []list.Item) error {
+func (s *StatsBar) storeTaskStats(l []list.Item) error {
 	for _, v := range l {
 		i, ok := v.(taskListItem)
 		if !ok {
@@ -43,8 +43,8 @@ func (s *StatusBar) storeTaskStates(l []list.Item) error {
 	return nil
 }
 
-func (s *StatusBar) RenderStatusBar(l []list.Item) string {
-	s.storeTaskStates(l)
+func (s *StatsBar) RenderStatsBar(l []list.Item) string {
+	s.storeTaskStats(l)
 
 	todo := lipgloss.NewStyle().Foreground(styles.Highlight).Render(strconv.Itoa(s.Todo))
 	doing := lipgloss.NewStyle().Foreground(styles.Notice).Render(strconv.Itoa(s.Doing))

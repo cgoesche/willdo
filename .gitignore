@@ -33,3 +33,6 @@ go.work.sum
 
 # build output
 build/
+
+# database files
+*.db

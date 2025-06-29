@@ -24,14 +24,14 @@ import (
 
 var (
 	ItemStyle         = lipgloss.NewStyle().PaddingLeft(1)
-	SelectedItemStyle = lipgloss.NewStyle().PaddingLeft(1).Foreground(lipgloss.Color("170")).Bold(true)
+	SelectedItemStyle = lipgloss.NewStyle().PaddingLeft(0).Foreground(lipgloss.Color("170")).Bold(true)
 	TaskIdentityStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(subtle)
 	PaginationStyle   = list.DefaultStyles().PaginationStyle.PaddingLeft(1)
-	HelpStyle         = list.DefaultStyles().HelpStyle.PaddingLeft(2).PaddingBottom(1)
+	HelpStyle         = lipgloss.NewStyle().PaddingLeft(0).Foreground(subtle).MarginBottom(1)
 	QuitTextStyle     = lipgloss.NewStyle().Margin(1, 0, 2, 4)
 
 	normal    = lipgloss.Color("#EEEEEE")
-	subtle    = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#383838"}
+	subtle    = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#4d4d4d"}
 	Special   = lipgloss.AdaptiveColor{Light: "#43BF6D", Dark: "#73F59F"}
 	Highlight = lipgloss.Color("#EF56f4")
 	Notice    = lipgloss.Color("111")
@@ -46,7 +46,9 @@ func DefaultStyles() list.Styles {
 		Foreground(Special).Underline(true).Bold(true)
 
 	s.StatusBar = lipgloss.NewStyle().
-		Foreground(normal)
+		Foreground(subtle).MarginBottom(1)
+
+	s.HelpStyle = HelpStyle
 
 	s.PaginationStyle = PaginationStyle
 
