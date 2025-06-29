@@ -39,7 +39,11 @@ func (s *StatsBar) storeTaskStats(l []list.Item) error {
 		}
 	}
 
-	s.Progress = (float64(s.Done) / float64(len(l))) * 100
+	if len(l) == 0 {
+		s.Progress = 0
+	} else {
+		s.Progress = (float64(s.Done) / float64(len(l))) * 100
+	}
 	return nil
 }
 

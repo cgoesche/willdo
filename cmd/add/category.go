@@ -19,10 +19,10 @@ package add
 import (
 	"fmt"
 
+	"github.com/cgoesche/willdo/internal/config"
 	"github.com/cgoesche/willdo/internal/database"
 	"github.com/cgoesche/willdo/internal/models"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -34,9 +34,8 @@ var (
 		Long: `There is not much more to say about this or 
 are you looking for the entire commit history ?`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			path := viper.GetViper().GetString("database.path")
 			client := database.NewClient()
-			err := client.InitDB(path)
+			err := client.InitDB(config.SetDefault().Database.Path)
 			if err != nil {
 				return err
 			}

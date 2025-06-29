@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/cgoesche/willdo/internal/config"
 	"github.com/cgoesche/willdo/internal/database"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -33,10 +33,8 @@ var (
 are you looking for the entire commit history ?`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			path := viper.GetViper().GetString("database.path")
 			client := database.NewClient()
-
-			err := client.InitDB(path)
+			err := client.InitDB(config.SetDefault().Database.Path)
 			if err != nil {
 				return err
 			}

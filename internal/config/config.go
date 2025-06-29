@@ -20,7 +20,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cgoesche/willdo/app"
 	"github.com/cgoesche/willdo/internal/database"
 )
 
@@ -34,7 +33,7 @@ type Config struct {
 
 func SetDefault() Config {
 	dir, _ := os.UserHomeDir()
-	dbFilePath := filepath.Join(dir, app.Name, database.DatabaseFileName)
+	dbFilePath := filepath.Join(dir, database.DatabaseFileName)
 
 	return Config{
 		Database: Database{

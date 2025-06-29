@@ -14,15 +14,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package add
+package cmd
 
 import (
 	"fmt"
 
+	"github.com/cgoesche/willdo/internal/config"
 	"github.com/cgoesche/willdo/internal/database"
 	"github.com/cgoesche/willdo/internal/models"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -34,10 +34,8 @@ var (
 		Long: `There is not much more to say about this or 
 are you looking for the entire commit history ?`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			path := viper.GetViper().GetString("database.path")
 			client := database.NewClient()
-
-			err := client.InitDB(path)
+			err := client.InitDB(config.SetDefault().Database.Path)
 			if err != nil {
 				return err
 			}
@@ -78,8 +76,8 @@ func addTask(c *database.Client) error {
 		Status:      t.Status,
 		Category:    t.Category,
 	}
-	_, err := c.InsertRow(task)
-	if err != nil {
+	id, err := c.InsertRow(task)
+	if err != nil || id == -1 {
 		return err
 	}
 	return nil

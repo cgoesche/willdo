@@ -159,10 +159,10 @@ func (m model) deleteTask() (tea.Model, tea.Cmd) {
 	}
 
 	if err = m.updateListItems(); err != nil {
-		return m, m.lists[m.listIndex].NewStatusMessage("Task deleted but failed to update task.")
+		return m, m.lists[m.listIndex].NewStatusMessage("Task deleted but failed to update task list.")
 	}
 
-	return m, m.lists[m.listIndex].NewStatusMessage("Deleted task")
+	return m, m.lists[m.listIndex].NewStatusMessage("Task deleted")
 }
 
 func (m model) completeTask() (tea.Model, tea.Cmd) {

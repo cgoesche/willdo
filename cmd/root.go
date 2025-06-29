@@ -25,7 +25,6 @@ import (
 	"github.com/cgoesche/willdo/cmd/add"
 	"github.com/cgoesche/willdo/cmd/del"
 	"github.com/cgoesche/willdo/cmd/edit"
-	"github.com/cgoesche/willdo/cmd/list"
 	"github.com/cgoesche/willdo/internal/bubbletea"
 	"github.com/cgoesche/willdo/internal/config"
 	"github.com/cgoesche/willdo/internal/database"
@@ -52,7 +51,7 @@ var (
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client := database.NewClient()
-			err := client.InitDB(databaseFile)
+			err := client.InitDB(config.SetDefault().Database.Path)
 			if err != nil {
 				return err
 			}
@@ -80,7 +79,6 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "Configuration file location")
-	rootCmd.PersistentFlags().StringVar(&databaseFile, "database", config.SetDefault().Database.Path, "Database file path")
 	rootCmd.PersistentFlags().Int64VarP(&categoryID, "category", "c", 1, "Category to list tasks from")
 
 	viper.BindPFlag("database.path", rootCmd.PersistentFlags().Lookup("database"))
@@ -89,9 +87,9 @@ func init() {
 	rootCmd.AddCommand(completeCmd)
 	rootCmd.AddCommand(del.DeleteCmd)
 	rootCmd.AddCommand(edit.EditCmd)
-	rootCmd.AddCommand(list.ListCmd)
 	rootCmd.AddCommand(resetCmd)
 	rootCmd.AddCommand(startCmd)
+	rootCmd.AddCommand(taskCmd)
 	rootCmd.AddCommand(versionCmd)
 }
 
@@ -107,7 +105,7 @@ func initConfig() {
 		var configPath = filepath.Join(configDir, app.Name)
 		viper.AddConfigPath(configPath)
 		viper.SetConfigType("yaml")
-		viper.SetConfigName("config.yaml")
+		viper.SetConfigName("config")
 	}
 
 	viper.SetEnvPrefix(app.Name)
