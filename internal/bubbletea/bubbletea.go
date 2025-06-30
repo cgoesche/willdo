@@ -81,7 +81,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	var s StatsBar
 
-	details := m.RenderTaskDetailsSection()
+	details := RenderTaskDetailsSection(m.lists[m.listIndex].SelectedItem())
 	statsBar := s.RenderStatsBar(m.lists[m.listIndex].Items())
 	content := docStyle.Render(m.lists[m.listIndex].View() + "\n" + details + statsBar)
 

@@ -20,19 +20,16 @@ import (
 	"fmt"
 
 	"github.com/cgoesche/willdo/internal/bubbletea/styles"
+	"github.com/charmbracelet/bubbles/list"
 )
 
-func (m model) RenderTaskDetailsSection() string {
-	i := m.lists[m.listIndex].Index()
-	items := m.lists[m.listIndex].Items()
-
-	item, ok := items[i].(taskListItem)
-	if !ok {
-		return ""
-	}
-
+func RenderTaskDetailsSection(i list.Item) string {
 	sectionTitle := styles.TaskDetailSectionTitleStyle.Render("Details")
 
-	section := fmt.Sprintf("%s\nID: %d\nTitle: %s\nDescription: %s\n\n", sectionTitle, item.Identity(), item.Title(), item.Description())
+	task, ok := i.(taskListItem)
+	if !ok {
+		return fmt.Sprintf("%s\nID: \nTitle: \nDescription: \n\n", sectionTitle)
+	}
+	section := fmt.Sprintf("%s\nID: %d\nTitle: %s\nDescription: %s\n\n", sectionTitle, task.Identity(), task.Title(), task.Description())
 	return section
 }
