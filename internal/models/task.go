@@ -43,6 +43,8 @@ var (
 	FavoriteIcon  = "★"
 	IsFavorite    = 1
 	IsNotFavorite = 0
+
+	NoteIndicatorIcon = "🛈"
 )
 
 type Task struct {

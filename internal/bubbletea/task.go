@@ -31,6 +31,7 @@ import (
 
 const (
 	ellipsis = "..."
+	bullet
 )
 
 type taskListItem struct {
@@ -75,15 +76,19 @@ func (d taskItemDelegate) Render(w io.Writer, m list.Model, index int, listItem 
 		return
 	}
 
+	var str string
 	title := ansi.Truncate(i.Title(), m.Width()/2, ellipsis)
 	statusIcon := styles.RenderStatusIcon(models.Status(i.Status()))
-	favoriteIcon := ""
+
+	str = fmt.Sprintf("%   3d.  %s %s", index+1, statusIcon, title)
 
 	if i.IsFavorite() == models.IsFavorite {
-		favoriteIcon = styles.FavoriteIconStyle.Render(models.FavoriteIcon)
+		str += styles.FavoriteIconStyle.Render(" " + models.FavoriteIcon)
 	}
 
-	str := fmt.Sprintf("%   3d.  %s  %s %s", index+1, statusIcon, title, favoriteIcon)
+	if i.Description() != "" {
+		str += styles.NoteIndicatorStyle.Render(" " + models.NoteIndicatorIcon)
+	}
 
 	fn := styles.ItemStyle.Render
 	if index == m.Index() {

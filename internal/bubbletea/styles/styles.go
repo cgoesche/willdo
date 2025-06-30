@@ -23,7 +23,7 @@ import (
 )
 
 var (
-	TitleBarStyle               = lipgloss.NewStyle().Padding(0)
+	TitleBarStyle               = lipgloss.NewStyle().PaddingTop(1)
 	ListTitleStyle              = lipgloss.NewStyle().Foreground(Special).Underline(true).Bold(true)
 	TaskDetailSectionTitleStyle = lipgloss.NewStyle().Foreground(Highlight).PaddingBottom(1).Underline(true)
 	ItemStyle                   = lipgloss.NewStyle().PaddingLeft(1)
@@ -34,6 +34,7 @@ var (
 	HelpStyle                   = lipgloss.NewStyle().PaddingLeft(0).Foreground(Subtle).MarginBottom(1)
 	QuitTextStyle               = lipgloss.NewStyle().Margin(1, 0, 2, 4)
 	FavoriteIconStyle           = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFF344"))
+	NoteIndicatorStyle          = lipgloss.NewStyle().Foreground(Notice)
 
 	Normal    = lipgloss.Color("#EEEEEE")
 	Subtle    = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#4d4d4d"}
