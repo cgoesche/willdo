@@ -1,2 +1,2 @@
 # willdo
-willdo is a feature-full terminal to-do list manager
+willdo is a minimal command line to-do list manager
