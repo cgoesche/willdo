@@ -75,7 +75,6 @@ func (d taskItemDelegate) Render(w io.Writer, m list.Model, index int, listItem 
 		return
 	}
 
-	id := styles.TaskIdentityStyle.Render(fmt.Sprintf("%d", i.Identity()))
 	title := ansi.Truncate(i.Title(), m.Width()/2, ellipsis)
 	statusIcon := styles.RenderStatusIcon(models.Status(i.Status()))
 	favoriteIcon := ""
@@ -84,7 +83,7 @@ func (d taskItemDelegate) Render(w io.Writer, m list.Model, index int, listItem 
 		favoriteIcon = styles.FavoriteIconStyle.Render(models.FavoriteIcon)
 	}
 
-	str := fmt.Sprintf("%s.  %s  %s %s", id, statusIcon, title, favoriteIcon)
+	str := fmt.Sprintf("%   3d.  %s  %s %s", index+1, statusIcon, title, favoriteIcon)
 
 	fn := styles.ItemStyle.Render
 	if index == m.Index() {

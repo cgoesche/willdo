@@ -23,13 +23,17 @@ import (
 )
 
 var (
-	ItemStyle         = lipgloss.NewStyle().PaddingLeft(1)
-	SelectedItemStyle = lipgloss.NewStyle().PaddingLeft(0).Foreground(lipgloss.Color("170")).Bold(true)
-	TaskIdentityStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(Subtle)
-	PaginationStyle   = list.DefaultStyles().PaginationStyle.PaddingLeft(1)
-	HelpStyle         = lipgloss.NewStyle().PaddingLeft(0).Foreground(Subtle).MarginBottom(1)
-	QuitTextStyle     = lipgloss.NewStyle().Margin(1, 0, 2, 4)
-	FavoriteIconStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFF344"))
+	TitleBarStyle               = lipgloss.NewStyle().Padding(0)
+	ListTitleStyle              = lipgloss.NewStyle().Foreground(Special).Underline(true).Bold(true)
+	TaskDetailSectionTitleStyle = lipgloss.NewStyle().Foreground(Highlight).PaddingBottom(1).Underline(true)
+	ItemStyle                   = lipgloss.NewStyle().PaddingLeft(1)
+	SelectedItemStyle           = lipgloss.NewStyle().PaddingLeft(0).Foreground(lipgloss.Color("170")).Bold(true)
+	TaskIdentityStyle           = lipgloss.NewStyle().PaddingLeft(2).Foreground(Subtle)
+	StatusBarStyle              = lipgloss.NewStyle().Foreground(Subtle).MarginBottom(1)
+	PaginationStyle             = list.DefaultStyles().PaginationStyle.PaddingLeft(1)
+	HelpStyle                   = lipgloss.NewStyle().PaddingLeft(0).Foreground(Subtle).MarginBottom(1)
+	QuitTextStyle               = lipgloss.NewStyle().Margin(1, 0, 2, 4)
+	FavoriteIconStyle           = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFF344"))
 
 	Normal    = lipgloss.Color("#EEEEEE")
 	Subtle    = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#4d4d4d"}
@@ -40,19 +44,11 @@ var (
 
 func DefaultStyles() list.Styles {
 	s := list.DefaultStyles()
-
-	s.TitleBar = lipgloss.NewStyle().Padding(0, 0, 0, 0)
-
-	s.Title = lipgloss.NewStyle().
-		Foreground(Special).Underline(true).Bold(true)
-
-	s.StatusBar = lipgloss.NewStyle().
-		Foreground(Subtle).MarginBottom(1)
-
+	s.TitleBar = TitleBarStyle
+	s.Title = ListTitleStyle
+	s.StatusBar = StatusBarStyle
 	s.HelpStyle = HelpStyle
-
 	s.PaginationStyle = PaginationStyle
-
 	return s
 }
 
