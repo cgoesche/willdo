@@ -40,11 +40,11 @@ are you looking for the entire commit history ?`,
 				return err
 			}
 
-			if err = addCategory(client); err != nil {
+			if err = addCategory(client, *cat); err != nil {
 				return fmt.Errorf("failed to add category: %v", err)
 			}
 
-			fmt.Printf("Category '%s' added successfully!\n", cat.Name)
+			fmt.Println("Category added!")
 			return nil
 		},
 	}
@@ -53,19 +53,13 @@ are you looking for the entire commit history ?`,
 func init() {
 	categoryCmd.Flags().StringVarP(&cat.Name, "name", "n", "", "Category name")
 	categoryCmd.Flags().StringVarP(&cat.Description, "description", "d", "", "Category description")
-
 	categoryCmd.MarkFlagRequired("name")
 }
 
-func addCategory(client *database.Client) error {
-	cat := &models.Category{
-		Name:        cat.Name,
-		Description: cat.Description,
-	}
+func addCategory(client *database.Client, cat models.Category) error {
 	_, err := client.InsertRow(cat)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }

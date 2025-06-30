@@ -39,6 +39,10 @@ var (
 		Doing: "…",
 		Done:  "✔",
 	}
+
+	FavoriteIcon  = "★"
+	IsFavorite    = 1
+	IsNotFavorite = 0
 )
 
 type Task struct {
@@ -48,6 +52,7 @@ type Task struct {
 	Priority    int64
 	Status      int64
 	Category    int64
+	IsFavorite  int
 }
 
 type Tasks []Task

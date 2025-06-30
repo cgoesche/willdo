@@ -36,7 +36,7 @@ var (
 const (
 	TaskTableName            string = "task"
 	CategoryTableName        string = "category"
-	DefaultCategoryTableName string = "My Board"
+	DefaultCategoryTableName string = "My List"
 	DatabaseFileName         string = app.Name + ".db"
 	databaseDriver           string = "sqlite"
 
@@ -53,6 +53,7 @@ const (
 	status INTEGER NOT NULL,
 	priority INTEGER NOT NULL,
 	category INTEGER NOT NULL,
+	isfavorite INTEGER NOT NULL,
 	FOREIGN KEY (category) REFERENCES category(id) ON DELETE CASCADE
 );`
 )
@@ -100,9 +101,9 @@ func (c *Client) InitDB(path string) (err error) {
 // type of the passed row
 func (c *Client) InsertRow(row any) (int64, error) {
 	switch v := row.(type) {
-	case *models.Category:
+	case models.Category:
 		return c.addCategory(v)
-	case *models.Task:
+	case models.Task:
 		return c.addTask(v)
 	default:
 		return -1, fmt.Errorf("invalid type for provided row")

@@ -23,9 +23,9 @@ import (
 	"github.com/cgoesche/willdo/internal/models"
 )
 
-func (c *Client) addTask(t *models.Task) (int64, error) {
-	res, err := c.db.Exec("INSERT INTO task (title, description, status, priority, category) VALUES (?, ?, ?, ?, ?)",
-		t.Title, t.Description, t.Status, t.Priority, t.Category)
+func (c *Client) addTask(t models.Task) (int64, error) {
+	res, err := c.db.Exec("INSERT INTO task (title, description, status, priority, category, isfavorite) VALUES (?, ?, ?, ?, ?, ?)",
+		t.Title, t.Description, t.Status, t.Priority, t.Category, t.IsFavorite)
 	if err != nil {
 		return -1, err
 	}
@@ -83,7 +83,7 @@ func (c *Client) QueryAllTasks() (models.Tasks, error) {
 	for rows.Next() {
 		var t models.Task
 
-		err := rows.Scan(&t.ID, &t.Title, &t.Description, &t.Status, &t.Priority, &t.Category)
+		err := rows.Scan(&t.ID, &t.Title, &t.Description, &t.Status, &t.Priority, &t.Category, &t.IsFavorite)
 		if err == sql.ErrNoRows {
 			return nil, ErrRowNotFound
 		}
@@ -105,7 +105,7 @@ func (c *Client) QueryTasksFromCategory(cat int64) (models.Tasks, error) {
 
 	for rows.Next() {
 		var t models.Task
-		err := rows.Scan(&t.ID, &t.Title, &t.Description, &t.Status, &t.Priority, &t.Category)
+		err := rows.Scan(&t.ID, &t.Title, &t.Description, &t.Status, &t.Priority, &t.Category, &t.IsFavorite)
 		if err != nil {
 			return nil, err
 		}
@@ -120,7 +120,7 @@ func (c *Client) QueryTaskFromID(id int64) (models.Task, error) {
 	q := fmt.Sprintf("SELECT * FROM %s WHERE id = %d;", TaskTableName, id)
 	row := c.db.QueryRow(q)
 
-	err := row.Scan(&t.ID, &t.Title, &t.Description, &t.Status, &t.Priority, &t.Category)
+	err := row.Scan(&t.ID, &t.Title, &t.Description, &t.Status, &t.Priority, &t.Category, &t.IsFavorite)
 	if err == sql.ErrNoRows {
 		return t, ErrRowNotFound
 	}
@@ -129,6 +129,20 @@ func (c *Client) QueryTaskFromID(id int64) (models.Task, error) {
 
 func (c *Client) updateTaskStatus(i int, s models.Status) (int64, error) {
 	q := fmt.Sprintf("UPDATE %s SET status = %d WHERE id = %d;", TaskTableName, s, i)
+	res, err := c.db.Exec(q)
+	if err != nil {
+		return -1, err
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return -1, err
+	}
+	return id, nil
+}
+
+func (c *Client) updateTaskFavoriteStatus(i int64, f int) (int64, error) {
+	q := fmt.Sprintf("UPDATE %s SET isfavorite = %d WHERE id = %d;", TaskTableName, f, i)
 	res, err := c.db.Exec(q)
 	if err != nil {
 		return -1, err
@@ -151,4 +165,8 @@ func (c *Client) StartTask(i int) (int64, error) {
 
 func (c *Client) ResetTask(i int) (int64, error) {
 	return c.updateTaskStatus(i, models.ToDo)
+}
+
+func (c *Client) ToggleTaskFavoriteStatus(i int64, f int) (int64, error) {
+	return c.updateTaskFavoriteStatus(i, f)
 }

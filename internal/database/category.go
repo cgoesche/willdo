@@ -22,7 +22,7 @@ import (
 	"github.com/cgoesche/willdo/internal/models"
 )
 
-func (c *Client) addCategory(cat *models.Category) (int64, error) {
+func (c *Client) addCategory(cat models.Category) (int64, error) {
 	res, err := c.db.Exec("INSERT INTO category (name, description) VALUES (?, ?)", cat.Name, cat.Description)
 	if err != nil {
 		return -1, err

@@ -40,27 +40,28 @@ are you looking for the entire commit history ?`,
 				return err
 			}
 
-			if err = addTask(client); err != nil {
+			if err = addTask(client, *t); err != nil {
 				return fmt.Errorf("failed to add task: %v", err)
 			}
 
-			fmt.Printf("Task '%s' added successfully!\n", t.Title)
+			fmt.Println("Task added!")
 			return nil
 		},
 	}
 )
 
 func init() {
+	taskCmd.Flags().Int64VarP(&t.Category, "category", "c", 1, "Task category")
 	taskCmd.Flags().StringVarP(&t.Title, "title", "t", "", "Task title")
 	taskCmd.Flags().StringVarP(&t.Description, "description", "d", "", "Task description")
 	taskCmd.Flags().Int64VarP(&t.Status, "status", "s", 0, "Task status")
 	taskCmd.Flags().Int64VarP(&t.Priority, "priority", "p", 0, "Task priority")
-	taskCmd.Flags().Int64VarP(&t.Category, "category", "c", 1, "Task category")
+	taskCmd.Flags().IntVarP(&t.IsFavorite, "favorite", "f", 0, "Mark task as favorite")
 
 	taskCmd.MarkFlagRequired("title")
 }
 
-func addTask(c *database.Client) error {
+func addTask(c *database.Client, t models.Task) error {
 	if t.Status > int64(models.Done) || t.Status < int64(models.ToDo) {
 		return fmt.Errorf("invalid status value")
 	}
@@ -69,14 +70,7 @@ func addTask(c *database.Client) error {
 		return fmt.Errorf("invalid priority value")
 	}
 
-	task := &models.Task{
-		Title:       t.Title,
-		Description: t.Description,
-		Priority:    t.Priority,
-		Status:      t.Status,
-		Category:    t.Category,
-	}
-	id, err := c.InsertRow(task)
+	id, err := c.InsertRow(t)
 	if err != nil || id == -1 {
 		return err
 	}

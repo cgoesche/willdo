@@ -25,10 +25,6 @@ type Category struct {
 type Categories []Category
 type CategoryTable map[string]int64
 
-const (
-	DefaultCategoryName string = "Default"
-)
-
 func GetCategoryName(cats Categories, id int64) string {
 	for _, v := range cats {
 		if id == v.ID {

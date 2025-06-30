@@ -60,6 +60,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.deleteTask()
 		case msg.String() == "c":
 			return m.completeTask()
+		case msg.String() == "f":
+			return m.toggleTaskFavStatus()
 		case msg.String() == "s":
 			return m.startTask()
 		case msg.String() == "r":
@@ -67,8 +69,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case tea.WindowSizeMsg:
-		//h, v := docStyle.GetFrameSize()
-		m.lists[m.listIndex].SetSize(50, 15)
+		_, v := docStyle.GetFrameSize()
+		m.lists[m.listIndex].SetSize(msg.Width-v, 15)
 	}
 
 	var cmd tea.Cmd
