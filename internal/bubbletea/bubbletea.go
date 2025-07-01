@@ -22,95 +22,38 @@ import (
 	"time"
 
 	"github.com/cgoesche/willdo/internal/bubbletea/styles"
-	"github.com/cgoesche/willdo/internal/database"
 	"github.com/cgoesche/willdo/internal/models"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
-var docStyle = lipgloss.NewStyle().Margin(1, 2)
-
-type model struct {
-	lists            []list.Model
-	dbClient         *database.Client
-	listIndex        int
-	categories       models.Categories
-	selectedCategory int64
-}
-
-func initialModel() model {
-	return model{
-		lists:     make([]list.Model, 0),
-		listIndex: 0,
-	}
-}
-
-func (m model) Init() tea.Cmd {
-	return nil
-}
-
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch {
-		case msg.String() == "ctrl+c":
-			return m, tea.Quit
-		case msg.String() == "d":
-			return m.deleteTask()
-		case msg.String() == "c":
-			return m.completeTask()
-		case msg.String() == "f":
-			return m.toggleTaskFavStatus()
-		case msg.String() == "s":
-			return m.startTask()
-		case msg.String() == "r":
-			return m.resetTask()
-		}
-
-	case tea.WindowSizeMsg:
-		h, v := docStyle.GetFrameSize()
-		m.lists[m.listIndex].SetSize(msg.Width-v, msg.Height-2*h)
-	}
-
-	var cmd tea.Cmd
-	m.lists[m.listIndex], cmd = m.lists[m.listIndex].Update(msg)
-	return m, cmd
-}
-
-func (m model) View() string {
-	var s StatsBar
-
-	details := RenderTaskDetailsSection(m.lists[m.listIndex].SelectedItem())
-	statsBar := s.RenderStatsBar(m.lists[m.listIndex].Items())
-	content := docStyle.Render(m.lists[m.listIndex].View() + "\n" + details + statsBar)
-
-	return content
-}
-
-func Run(client *database.Client, categories models.Categories, categoryID int64) {
-	m := initialModel()
-	m.dbClient = client
-	m.categories = categories
-	m.selectedCategory = categoryID
-
+func Run(m model) {
 	d := newTaskItemDelegate()
-
+	d.categories = m.Categories
 	defaultList := list.New([]list.Item{}, d, 0, 0)
 	defaultList.SetStatusBarItemName("task", "tasks")
 	m.lists = []list.Model{defaultList, defaultList}
 
-	l, err := getTaskListItemsByCategory(client, m.selectedCategory)
+	var l []list.Item
+	var err error
+	if m.ShowAllTasks {
+		l, err = getAllTaskListItems(m.DbClient)
+		m.lists[m.selectedList].Title = "All tasks"
+		d.showCategory = true
+	} else {
+		l, err = getTaskListItemsByCategory(m.DbClient, m.SelectedCategory)
+		m.lists[m.selectedList].Title = models.GetCategoryName(m.Categories, m.SelectedCategory)
+	}
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
 
-	m.lists[m.listIndex].SetItems(l)
-	m.lists[m.listIndex].Title = models.GetCategoryName(m.categories, m.selectedCategory)
-	m.lists[m.listIndex].Styles = styles.DefaultStyles()
-	m.lists[m.listIndex].StatusMessageLifetime = 3 * time.Second
-	m.lists[m.listIndex].SetShowFilter(false)
-	m.lists[m.listIndex].SetFilteringEnabled(false)
+	m.lists[m.selectedList].SetItems(l)
+	m.lists[m.selectedList].Styles = styles.DefaultStyles()
+	m.lists[m.selectedList].StatusMessageLifetime = 3 * time.Second
+	m.lists[m.selectedList].SetShowFilter(false)
+	m.lists[m.selectedList].SetFilteringEnabled(false)
+	m.details.selectedItem = m.lists[m.selectedList].SelectedItem()
 
 	p := tea.NewProgram(m)
 	_, err = p.Run()
@@ -118,22 +61,4 @@ func Run(client *database.Client, categories models.Categories, categoryID int64
 		fmt.Println("Error running program:", err)
 		os.Exit(1)
 	}
-}
-
-func (m *model) updateListItems() error {
-	l, err := getTaskListItemsByCategory(m.dbClient, m.selectedCategory)
-	if err != nil {
-		return err
-	}
-	m.lists[m.listIndex].SetItems(l)
-	return nil
-}
-
-func (m *model) nextList() (tea.Model, tea.Cmd) {
-	if m.listIndex+1 <= len(m.lists)-1 {
-		m.listIndex = m.listIndex + 1
-	}
-
-	_, cmd := m.lists[m.listIndex].Update(nil)
-	return m, cmd
 }

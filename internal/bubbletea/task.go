@@ -54,8 +54,19 @@ func (i taskListItem) IsFavorite() int     { return i.IsFav }
 func (i taskListItem) FilterValue() string { return i.Tit }
 
 type taskItemDelegate struct {
-	height  int
-	spacing int
+	height       int
+	spacing      int
+	categories   models.Categories
+	showCategory bool
+}
+
+func newTaskItemDelegate() *taskItemDelegate {
+	return &taskItemDelegate{
+		spacing:      0,
+		height:       1,
+		categories:   nil,
+		showCategory: false,
+	}
 }
 
 func (d taskItemDelegate) Height() int {
@@ -71,23 +82,27 @@ func (d taskItemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd {
 }
 
 func (d taskItemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	i, ok := listItem.(taskListItem)
+	task, ok := listItem.(taskListItem)
 	if !ok {
 		return
 	}
 
 	var str string
-	title := ansi.Truncate(i.Title(), m.Width()/2, ellipsis)
-	statusIcon := styles.RenderStatusIcon(models.Status(i.Status()))
+	title := ansi.Truncate(task.Title(), m.Width()/2, ellipsis)
+	statusIcon := styles.RenderStatusIcon(models.Status(task.Status()))
 
 	str = fmt.Sprintf("%   3d.  %s %s", index+1, statusIcon, title)
 
-	if i.IsFavorite() == models.IsFavorite {
+	if task.IsFavorite() == models.IsFavorite {
 		str += styles.FavoriteIconStyle.Render(" " + models.FavoriteIcon)
 	}
 
-	if i.Description() != "" {
+	if task.Description() != "" {
 		str += styles.NoteIndicatorStyle.Render(" " + models.NoteIndicatorIcon)
+	}
+
+	if d.showCategory {
+		str += styles.TaskCategoryNameStyle.Render("@" + models.GetCategoryName(d.categories, task.Cat))
 	}
 
 	fn := styles.ItemStyle.Render
@@ -107,14 +122,25 @@ func (d *taskItemDelegate) SetSpacing(s int) {
 	d.spacing = s
 }
 
-func newTaskItemDelegate() *taskItemDelegate {
-	return &taskItemDelegate{
-		spacing: 0,
-		height:  1,
+func marshalTaskListItems(tasks models.Tasks) []list.Item {
+	var l []list.Item
+
+	for _, v := range tasks {
+		var i taskListItem
+		i.ID = v.ID
+		i.Tit = v.Title
+		i.Stat = v.Status
+		i.Prio = v.Priority
+		i.Desc = v.Description
+		i.Cat = v.Category
+		i.IsFav = v.IsFavorite
+
+		l = append(l, i)
 	}
+	return l
 }
 
-func getTaskListItems(c *database.Client) ([]list.Item, error) {
+func getAllTaskListItems(c *database.Client) ([]list.Item, error) {
 	var l []list.Item
 
 	tasks, err := c.QueryAllTasks()
@@ -122,15 +148,7 @@ func getTaskListItems(c *database.Client) ([]list.Item, error) {
 		return nil, err
 	}
 
-	for _, v := range tasks {
-		var i taskListItem
-		i.ID = v.ID
-		i.Tit = v.Title
-		i.Stat = v.Status
-		i.Desc = v.Description
-
-		l = append(l, i)
-	}
+	l = marshalTaskListItems(tasks)
 	return l, nil
 }
 
@@ -142,124 +160,6 @@ func getTaskListItemsByCategory(c *database.Client, id int64) ([]list.Item, erro
 		return nil, err
 	}
 
-	for _, v := range tasks {
-		var i taskListItem
-		i.ID = v.ID
-		i.Tit = v.Title
-		i.Stat = v.Status
-		i.Desc = v.Description
-		i.IsFav = v.IsFavorite
-
-		l = append(l, i)
-	}
+	l = marshalTaskListItems(tasks)
 	return l, nil
-}
-
-func (m model) getTaskItem() (taskListItem, error) {
-	i := m.lists[m.listIndex].Index()
-	items := m.lists[m.listIndex].Items()
-
-	task, ok := items[i].(taskListItem)
-	if !ok {
-		return task, fmt.Errorf("failed to get task item ID")
-	}
-	return task, nil
-}
-
-func (m model) deleteTask() (tea.Model, tea.Cmd) {
-	task, err := m.getTaskItem()
-	if err != nil {
-		return m, m.lists[m.listIndex].NewStatusMessage(fmt.Sprintf("%v", err))
-	}
-
-	err = m.dbClient.DeleteTask(task.ID)
-	if err != nil {
-		return m, m.lists[m.listIndex].NewStatusMessage("Failed to delete task")
-	}
-
-	if err = m.updateListItems(); err != nil {
-		return m, m.lists[m.listIndex].NewStatusMessage("Task deleted but failed to update task list")
-	}
-
-	return m, m.lists[m.listIndex].NewStatusMessage("Task deleted")
-}
-
-func (m model) completeTask() (tea.Model, tea.Cmd) {
-	task, err := m.getTaskItem()
-	if err != nil {
-		return m, m.lists[m.listIndex].NewStatusMessage(fmt.Sprintf("%v", err))
-	}
-
-	_, err = m.dbClient.CompleteTask(int(task.ID))
-	if err != nil {
-		return m, m.lists[m.listIndex].NewStatusMessage("Failed to mark task as completed")
-	}
-
-	if err = m.updateListItems(); err != nil {
-		return m, m.lists[m.listIndex].NewStatusMessage("Task marked as completed but failed to update task list")
-	}
-
-	return m, m.lists[m.listIndex].NewStatusMessage("Task marked as 'Done'")
-}
-
-func (m model) startTask() (tea.Model, tea.Cmd) {
-	task, err := m.getTaskItem()
-	if err != nil {
-		return m, m.lists[m.listIndex].NewStatusMessage(fmt.Sprintf("%v", err))
-	}
-
-	_, err = m.dbClient.StartTask(int(task.ID))
-	if err != nil {
-		return m, m.lists[m.listIndex].NewStatusMessage("Failed to mark task")
-	}
-
-	if err = m.updateListItems(); err != nil {
-		return m, m.lists[m.listIndex].NewStatusMessage("Task started but failed to update task list")
-	}
-
-	return m, m.lists[m.listIndex].NewStatusMessage("Task marked as 'Doing'")
-}
-
-func (m model) resetTask() (tea.Model, tea.Cmd) {
-	task, err := m.getTaskItem()
-	if err != nil {
-		return m, m.lists[m.listIndex].NewStatusMessage(fmt.Sprintf("%v", err))
-	}
-
-	_, err = m.dbClient.ResetTask(int(task.ID))
-	if err != nil {
-		return m, m.lists[m.listIndex].NewStatusMessage("Failed to mark task as todo")
-	}
-
-	if err = m.updateListItems(); err != nil {
-		return m, m.lists[m.listIndex].NewStatusMessage("Task reset but failed to update task list")
-	}
-
-	return m, m.lists[m.listIndex].NewStatusMessage("Task marked as 'Todo'")
-}
-
-func (m model) toggleTaskFavStatus() (tea.Model, tea.Cmd) {
-	task, err := m.getTaskItem()
-	if err != nil {
-		return m, m.lists[m.listIndex].NewStatusMessage(fmt.Sprintf("%v", err))
-	}
-
-	var favStatus int
-	switch task.IsFav {
-	case models.IsFavorite:
-		favStatus = models.IsNotFavorite
-	case models.IsNotFavorite:
-		favStatus = models.IsFavorite
-	}
-
-	_, err = m.dbClient.ToggleTaskFavoriteStatus(task.ID, favStatus)
-	if err != nil {
-		return m, m.lists[m.listIndex].NewStatusMessage("Failed to mark task as favorite")
-	}
-
-	if err = m.updateListItems(); err != nil {
-		return m, m.lists[m.listIndex].NewStatusMessage("Task marked as favorite but failed to update task list")
-	}
-
-	return m, m.lists[m.listIndex].NewStatusMessage("Task marked as favorite")
 }

@@ -39,6 +39,7 @@ var (
 	configFile   string
 	databaseFile string
 	categoryID   int64
+	showAllTasks bool
 	conf         config.Config
 
 	rootCmd = &cobra.Command{
@@ -61,7 +62,12 @@ var (
 				return fmt.Errorf("failed to find any categories in the database, %v", err)
 			}
 
-			bubbletea.Run(client, cats, categoryID)
+			m := bubbletea.InitialModel()
+			m.DbClient = client
+			m.Categories = cats
+			m.ShowAllTasks = showAllTasks
+			m.SelectedCategory = categoryID
+			bubbletea.Run(m)
 			return nil
 		},
 	}
@@ -78,8 +84,10 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
+	rootCmd.PersistentFlags().BoolVarP(&showAllTasks, "all", "a", false, "Show tasks from all categories")
 	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "Configuration file location")
 	rootCmd.PersistentFlags().Int64VarP(&categoryID, "category", "c", 1, "Category to list tasks from")
+	rootCmd.MarkFlagsMutuallyExclusive("all", "category")
 
 	viper.BindPFlag("database.path", rootCmd.PersistentFlags().Lookup("database"))
 

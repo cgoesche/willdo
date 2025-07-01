@@ -21,9 +21,36 @@ import (
 
 	"github.com/cgoesche/willdo/internal/bubbletea/styles"
 	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
-func RenderTaskDetailsSection(i list.Item) string {
+type detailsModel struct {
+	selectedItem list.Item
+}
+
+func newDetailsModel() detailsModel {
+	return detailsModel{
+		selectedItem: nil,
+	}
+}
+
+func (d detailsModel) Init() tea.Cmd {
+	return nil
+}
+
+func (d detailsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	return d, nil
+}
+
+func (d detailsModel) View() string {
+	return d.renderTaskDetailsSection(d.selectedItem)
+}
+
+func (d *detailsModel) updateSelectedItem(i list.Item) {
+	d.selectedItem = i
+}
+
+func (d detailsModel) renderTaskDetailsSection(i list.Item) string {
 	sectionTitle := styles.TaskDetailSectionTitleStyle.Render("Details")
 
 	task, ok := i.(taskListItem)

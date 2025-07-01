@@ -23,24 +23,31 @@ import (
 )
 
 var (
+	NormalColor      = lipgloss.Color("#EEEEEE")
+	LightSubtleColor = lipgloss.Color("#8c8c8c")
+	SubtleColor      = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#4d4d4d"}
+	SpecialColor     = lipgloss.AdaptiveColor{Light: "#43BF6D", Dark: "#73F59F"}
+	HighlightColor   = lipgloss.Color("#EF56f4")
+	NoticeColor      = lipgloss.Color("111")
+	WarningColor     = lipgloss.Color("#FF4E4E")
+
+	DocStyle                    = lipgloss.NewStyle().Margin(1, 2)
 	TitleBarStyle               = lipgloss.NewStyle().PaddingTop(1)
-	ListTitleStyle              = lipgloss.NewStyle().Foreground(Special).Underline(true).Bold(true)
-	TaskDetailSectionTitleStyle = lipgloss.NewStyle().Foreground(Highlight).PaddingBottom(1).Underline(true)
+	ListTitleStyle              = lipgloss.NewStyle().Foreground(SpecialColor).Underline(true).Bold(true)
+	TaskDetailSectionTitleStyle = lipgloss.NewStyle().Foreground(SubtleColor).PaddingBottom(1).Underline(true).Bold(true)
 	ItemStyle                   = lipgloss.NewStyle().PaddingLeft(1)
+	TaskCategoryNameStyle       = lipgloss.NewStyle().Foreground(LightSubtleColor).PaddingLeft(1)
 	SelectedItemStyle           = lipgloss.NewStyle().PaddingLeft(0).Foreground(lipgloss.Color("170")).Bold(true)
-	TaskIdentityStyle           = lipgloss.NewStyle().PaddingLeft(2).Foreground(Subtle)
-	StatusBarStyle              = lipgloss.NewStyle().Foreground(Subtle).MarginBottom(1)
+	TaskIdentityStyle           = lipgloss.NewStyle().PaddingLeft(2).Foreground(SubtleColor)
+	StatusBarStyle              = lipgloss.NewStyle().Foreground(SubtleColor).MarginBottom(1)
 	PaginationStyle             = list.DefaultStyles().PaginationStyle.PaddingLeft(1)
-	HelpStyle                   = lipgloss.NewStyle().PaddingLeft(0).Foreground(Subtle).MarginBottom(1)
+	HelpStyle                   = lipgloss.NewStyle().PaddingLeft(0).Foreground(SubtleColor).MarginBottom(1)
 	QuitTextStyle               = lipgloss.NewStyle().Margin(1, 0, 2, 4)
 	FavoriteIconStyle           = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFF344"))
-	NoteIndicatorStyle          = lipgloss.NewStyle().Foreground(Notice)
-
-	Normal    = lipgloss.Color("#EEEEEE")
-	Subtle    = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#4d4d4d"}
-	Special   = lipgloss.AdaptiveColor{Light: "#43BF6D", Dark: "#73F59F"}
-	Highlight = lipgloss.Color("#EF56f4")
-	Notice    = lipgloss.Color("111")
+	NoteIndicatorStyle          = lipgloss.NewStyle().Foreground(NoticeColor)
+	TodoStyle                   = lipgloss.NewStyle().Foreground(HighlightColor)
+	DoingStyle                  = lipgloss.NewStyle().Foreground(NoticeColor)
+	DoneStyle                   = lipgloss.NewStyle().Foreground(SpecialColor)
 )
 
 func DefaultStyles() list.Styles {
@@ -58,11 +65,11 @@ func RenderStatusIcon(s models.Status) string {
 
 	switch s {
 	case models.ToDo:
-		style = lipgloss.NewStyle().Foreground(Highlight)
+		style = TodoStyle
 	case models.Doing:
-		style = lipgloss.NewStyle().Foreground(Notice)
+		style = DoingStyle
 	case models.Done:
-		style = lipgloss.NewStyle().Foreground(Special)
+		style = DoneStyle
 
 	}
 	return style.Render(models.StatusMap[models.Status(s)])
