@@ -40,16 +40,11 @@ are you looking for the entire commit history ?`,
 				return err
 			}
 
-			cats, err := client.QueryCategories()
+			cat, err := client.QueryCategoryByName(categoryName)
 			if err != nil {
-				return fmt.Errorf("failed to find any categories in the database, %v", err)
+				return fmt.Errorf("no category found with name '%s', %v", categoryName, err)
 			}
-
-			var categoryID = models.GetCategoryIDFromName(cats, categoryName)
-			if categoryID == 0 {
-				return fmt.Errorf("no category found with name '%s'", categoryName)
-			}
-			t.Category = categoryID
+			t.Category = cat.ID
 
 			if err = addTask(client, *t); err != nil {
 				return fmt.Errorf("failed to add task: %v", err)

@@ -87,3 +87,15 @@ func (c *Client) QueryCategories() (models.Categories, error) {
 	}
 	return cats, nil
 }
+
+func (c *Client) QueryCategoryByName(name string) (models.Category, error) {
+	var cat models.Category
+	q := fmt.Sprintf("SELECT * FROM %s WHERE name = ?;", CategoryTableName)
+	row := c.db.QueryRow(q, name)
+
+	err := row.Scan(&cat.ID, &cat.Name, &cat.Description)
+	if err != nil {
+		return cat, err
+	}
+	return cat, nil
+}
