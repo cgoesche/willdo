@@ -40,6 +40,17 @@ are you looking for the entire commit history ?`,
 				return err
 			}
 
+			cats, err := client.QueryCategories()
+			if err != nil {
+				return fmt.Errorf("failed to find any categories in the database, %v", err)
+			}
+
+			var categoryID = models.GetCategoryIDFromName(cats, categoryName)
+			if categoryID == 0 {
+				return fmt.Errorf("no category found with name '%s'", categoryName)
+			}
+			t.Category = categoryID
+
 			if err = addTask(client, *t); err != nil {
 				return fmt.Errorf("failed to add task: %v", err)
 			}
@@ -51,14 +62,15 @@ are you looking for the entire commit history ?`,
 )
 
 func init() {
-	taskCmd.Flags().Int64VarP(&t.Category, "category", "c", 1, "Task category")
+	taskCmd.Flags().StringVarP(&categoryName, "category", "c", "", "Task category")
 	taskCmd.Flags().StringVarP(&t.Title, "title", "t", "", "Task title")
 	taskCmd.Flags().StringVarP(&t.Description, "description", "d", "", "Task description")
 	taskCmd.Flags().Int64VarP(&t.Status, "status", "s", 0, "Task status")
 	taskCmd.Flags().Int64VarP(&t.Priority, "priority", "p", 0, "Task priority")
 	taskCmd.Flags().IntVarP(&t.IsFavorite, "favorite", "f", 0, "Mark task as favorite")
 
-	taskCmd.MarkFlagRequired("title")
+	taskCmd.MarkFlagsOneRequired("title", "category")
+	taskCmd.MarkFlagsRequiredTogether("title", "category")
 }
 
 func addTask(c *database.Client, t models.Task) error {
