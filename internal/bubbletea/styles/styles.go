@@ -23,20 +23,21 @@ import (
 )
 
 var (
-	NormalColor      = lipgloss.Color("#EEEEEE")
-	LightSubtleColor = lipgloss.Color("#8c8c8c")
-	SubtleColor      = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#4d4d4d"}
-	SpecialColor     = lipgloss.AdaptiveColor{Light: "#43BF6D", Dark: "#73F59F"}
-	HighlightColor   = lipgloss.Color("#EF56f4")
-	NoticeColor      = lipgloss.Color("111")
-	WarningColor     = lipgloss.Color("#FF4E4E")
+	NormalColor       = lipgloss.Color("#EEEEEE")
+	LightSubtleColor  = lipgloss.Color("#8c8c8c")
+	SubtleColor       = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#4d4d4d"}
+	SpecialColor      = lipgloss.AdaptiveColor{Light: "#43BF6D", Dark: "#73F59F"}
+	HighlightColor    = lipgloss.Color("#EF56f4")
+	NoticeColor       = lipgloss.Color("111")
+	WarningColor      = lipgloss.Color("#FF4E4E")
+	HighPriorityStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFF344")).Underline(true)
 
 	DocStyle                    = lipgloss.NewStyle().Margin(1, 2)
 	TitleBarStyle               = lipgloss.NewStyle().PaddingTop(1)
 	ListTitleStyle              = lipgloss.NewStyle().Foreground(SpecialColor).Underline(true).Bold(true)
 	TaskDetailSectionTitleStyle = lipgloss.NewStyle().Foreground(SubtleColor).PaddingBottom(1).Underline(true).Bold(true)
+	TaskCategoryNameStyle       = lipgloss.NewStyle().Foreground(SubtleColor).PaddingLeft(1)
 	ItemStyle                   = lipgloss.NewStyle().PaddingLeft(1)
-	TaskCategoryNameStyle       = lipgloss.NewStyle().Foreground(LightSubtleColor).PaddingLeft(1)
 	SelectedItemStyle           = lipgloss.NewStyle().PaddingLeft(0).Foreground(lipgloss.Color("170")).Bold(true)
 	TaskIdentityStyle           = lipgloss.NewStyle().PaddingLeft(2).Foreground(SubtleColor)
 	StatusBarStyle              = lipgloss.NewStyle().Foreground(SubtleColor).MarginBottom(1)
@@ -48,6 +49,7 @@ var (
 	TodoStyle                   = lipgloss.NewStyle().Foreground(HighlightColor)
 	DoingStyle                  = lipgloss.NewStyle().Foreground(NoticeColor)
 	DoneStyle                   = lipgloss.NewStyle().Foreground(SpecialColor)
+	SubtleStyle                 = lipgloss.NewStyle().Foreground(SubtleColor)
 )
 
 func DefaultStyles() list.Styles {

@@ -23,13 +23,39 @@ type Category struct {
 }
 
 type Categories []Category
-type CategoryTable map[string]int64
+type CategoryNameToIDMap map[string]int64
+type CategoryIDToNameMap map[int64]string
 
-func GetCategoryName(cats Categories, id int64) string {
+func GetCategoryNameFromID(cats Categories, id int64) string {
 	for _, v := range cats {
 		if id == v.ID {
 			return v.Name
 		}
 	}
 	return "N/A"
+}
+
+func GetCategoryIDFromName(cats Categories, n string) int64 {
+	for _, v := range cats {
+		if n == v.Name {
+			return v.ID
+		}
+	}
+	return 0
+}
+
+func NewCategoryNameToIDMap(cats Categories) CategoryNameToIDMap {
+	m := make(CategoryNameToIDMap, len(cats))
+	for _, v := range cats {
+		m[v.Name] = v.ID
+	}
+	return m
+}
+
+func NewCategoryIDToNameMap(cats Categories) CategoryIDToNameMap {
+	m := make(CategoryIDToNameMap, len(cats))
+	for _, v := range cats {
+		m[v.ID] = v.Name
+	}
+	return m
 }

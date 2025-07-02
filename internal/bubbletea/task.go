@@ -88,10 +88,20 @@ func (d taskItemDelegate) Render(w io.Writer, m list.Model, index int, listItem 
 	}
 
 	var str string
+	num := fmt.Sprintf("%   3d.", index+1)
+	num = styles.SubtleStyle.Render(num)
 	title := ansi.Truncate(task.Title(), m.Width()/2, ellipsis)
 	statusIcon := styles.RenderStatusIcon(models.Status(task.Status()))
 
-	str = fmt.Sprintf("%   3d.  %s %s", index+1, statusIcon, title)
+	if task.Priority() == int64(models.High) && task.Status() != int64(models.Done) {
+		title = styles.HighPriorityStyle.Render(title)
+	}
+
+	if task.Status() == int64(models.Done) {
+		title = styles.SubtleStyle.Render(title)
+	}
+
+	str = fmt.Sprintf("%s %s %s", num, statusIcon, title)
 
 	if task.IsFavorite() == models.IsFavorite {
 		str += styles.FavoriteIconStyle.Render(" " + models.FavoriteIcon)
@@ -102,7 +112,7 @@ func (d taskItemDelegate) Render(w io.Writer, m list.Model, index int, listItem 
 	}
 
 	if d.showCategory {
-		str += styles.TaskCategoryNameStyle.Render("@" + models.GetCategoryName(d.categories, task.Cat))
+		str += styles.TaskCategoryNameStyle.Render("[" + models.GetCategoryNameFromID(d.categories, task.Cat) + "]")
 	}
 
 	fn := styles.ItemStyle.Render

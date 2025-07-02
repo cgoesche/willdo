@@ -28,6 +28,7 @@ import (
 	"github.com/cgoesche/willdo/internal/bubbletea"
 	"github.com/cgoesche/willdo/internal/config"
 	"github.com/cgoesche/willdo/internal/database"
+	"github.com/cgoesche/willdo/internal/models"
 
 	"os"
 
@@ -38,7 +39,7 @@ import (
 var (
 	configFile   string
 	databaseFile string
-	categoryID   int64
+	categoryName string
 	showAllTasks bool
 	conf         config.Config
 
@@ -62,12 +63,26 @@ var (
 				return fmt.Errorf("failed to find any categories in the database, %v", err)
 			}
 
+			var categoryID int64
+			if categoryName != "" {
+				categoryID = models.GetCategoryIDFromName(cats, categoryName)
+				if categoryID == 0 {
+					return fmt.Errorf("no category found with name '%s'", categoryName)
+				}
+			} else {
+				showAllTasks = true
+			}
+
 			m := bubbletea.InitialModel()
 			m.DbClient = client
+			m.CatNameToIDMap = models.NewCategoryNameToIDMap(cats)
+			m.CatIDToNameMap = models.NewCategoryIDToNameMap(cats)
 			m.Categories = cats
 			m.ShowAllTasks = showAllTasks
 			m.SelectedCategory = categoryID
+
 			bubbletea.Run(m)
+
 			return nil
 		},
 	}
@@ -86,7 +101,7 @@ func init() {
 
 	rootCmd.PersistentFlags().BoolVarP(&showAllTasks, "all", "a", false, "Show tasks from all categories")
 	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "Configuration file location")
-	rootCmd.PersistentFlags().Int64VarP(&categoryID, "category", "c", 1, "Category to list tasks from")
+	rootCmd.PersistentFlags().StringVarP(&categoryName, "category", "c", "", "Category to list tasks of")
 	rootCmd.MarkFlagsMutuallyExclusive("all", "category")
 
 	viper.BindPFlag("database.path", rootCmd.PersistentFlags().Lookup("database"))

@@ -42,7 +42,7 @@ func Run(m model) {
 		d.showCategory = true
 	} else {
 		l, err = getTaskListItemsByCategory(m.DbClient, m.SelectedCategory)
-		m.lists[m.selectedList].Title = models.GetCategoryName(m.Categories, m.SelectedCategory)
+		m.lists[m.selectedList].Title = models.GetCategoryNameFromID(m.Categories, m.SelectedCategory)
 	}
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)

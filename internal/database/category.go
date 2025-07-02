@@ -22,6 +22,17 @@ import (
 	"github.com/cgoesche/willdo/internal/models"
 )
 
+const (
+	CategoryTableName        string = "category"
+	DefaultCategoryTableName string = "My List"
+	categoryTableSchema      string = `CREATE TABLE IF NOT EXISTS category (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	name TEXT NOT NULL,
+	description TEXT NOT NULL,
+	CONSTRAINT name_constraint UNIQUE (name)
+);`
+)
+
 func (c *Client) addCategory(cat models.Category) (int64, error) {
 	res, err := c.db.Exec("INSERT INTO category (name, description) VALUES (?, ?)", cat.Name, cat.Description)
 	if err != nil {

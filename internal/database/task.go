@@ -23,6 +23,20 @@ import (
 	"github.com/cgoesche/willdo/internal/models"
 )
 
+const (
+	TaskTableName   string = "task"
+	taskTableSchema string = `CREATE TABLE IF NOT EXISTS task (
+	id INTEGER PRIMARY KEY,
+	title TEXT NOT NULL,
+	description TEXT NOT NULL,
+	status INTEGER NOT NULL,
+	priority INTEGER NOT NULL,
+	category INTEGER NOT NULL,
+	isfavorite INTEGER NOT NULL,
+	FOREIGN KEY (category) REFERENCES category(id) ON DELETE CASCADE
+);`
+)
+
 func (c *Client) addTask(t models.Task) (int64, error) {
 	res, err := c.db.Exec("INSERT INTO task (title, description, status, priority, category, isfavorite) VALUES (?, ?, ?, ?, ?, ?)",
 		t.Title, t.Description, t.Status, t.Priority, t.Category, t.IsFavorite)

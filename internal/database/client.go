@@ -34,28 +34,8 @@ var (
 )
 
 const (
-	TaskTableName            string = "task"
-	CategoryTableName        string = "category"
-	DefaultCategoryTableName string = "My List"
-	DatabaseFileName         string = app.Name + ".db"
-	databaseDriver           string = "sqlite"
-
-	categoryTableSchema string = `CREATE TABLE IF NOT EXISTS category (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	name TEXT NOT NULL,
-	description TEXT NOT NULL,
-	CONSTRAINT name_constraint UNIQUE (name)
-);`
-	taskTableSchema string = `CREATE TABLE IF NOT EXISTS task (
-	id INTEGER PRIMARY KEY,
-	title TEXT NOT NULL,
-	description TEXT NOT NULL,
-	status INTEGER NOT NULL,
-	priority INTEGER NOT NULL,
-	category INTEGER NOT NULL,
-	isfavorite INTEGER NOT NULL,
-	FOREIGN KEY (category) REFERENCES category(id) ON DELETE CASCADE
-);`
+	DatabaseFileName string = app.Name + ".db"
+	databaseDriver   string = "sqlite"
 )
 
 type Client struct {

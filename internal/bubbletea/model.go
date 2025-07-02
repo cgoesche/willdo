@@ -31,6 +31,8 @@ type model struct {
 	DbClient         *database.Client
 	selectedList     int
 	Categories       models.Categories
+	CatNameToIDMap   models.CategoryNameToIDMap
+	CatIDToNameMap   models.CategoryIDToNameMap
 	SelectedCategory int64
 
 	ShowDetails  bool
@@ -70,6 +72,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case msg.String() == "ctrl+s":
 			m.ShowStats = !m.ShowStats
 			return m, m.lists[m.selectedList].NewStatusMessage("Toggled 'Statistics' section")
+		case msg.String() == "ctrl+r":
+			return m.refreshTaskList()
 		case msg.String() == "d":
 			return m.deleteTask(task)
 		case msg.String() == "c":
@@ -84,7 +88,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.WindowSizeMsg:
 		h, v := styles.DocStyle.GetFrameSize()
-		m.lists[m.selectedList].SetSize(msg.Width-v, msg.Height-2*h)
+		m.lists[m.selectedList].SetSize(msg.Width-v, msg.Height-(2*h))
 	}
 
 	m.lists[m.selectedList], cmd = m.lists[m.selectedList].Update(msg)
@@ -122,6 +126,13 @@ func (m *model) updateListItems() (err error) {
 	}
 	m.lists[m.selectedList].SetItems(l)
 	return nil
+}
+
+func (m model) refreshTaskList() (tea.Model, tea.Cmd) {
+	if err := m.updateListItems(); err != nil {
+		return m, m.lists[m.selectedList].NewStatusMessage("Failed to refresh list refreshed")
+	}
+	return m, m.lists[m.selectedList].NewStatusMessage("List refreshed")
 }
 
 func (m model) deleteTask(item list.Item) (tea.Model, tea.Cmd) {
