@@ -31,8 +31,6 @@ var (
 	categoryCmd = &cobra.Command{
 		Use:   "category",
 		Short: "Add a category",
-		Long: `There is not much more to say about this or 
-are you looking for the entire commit history ?`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			db := database.New(conf.Database)
 			catService := category.NewService(db)
@@ -42,7 +40,7 @@ are you looking for the entire commit history ?`,
 				return fmt.Errorf("failed to init category service repository, %v", err)
 			}
 
-			if strings.TrimSpace(cat.Name) == "" {
+			if len(strings.TrimSpace(cat.Name)) == 0 {
 				return fmt.Errorf("category name cannot be an empty string")
 			}
 
@@ -58,7 +56,7 @@ are you looking for the entire commit history ?`,
 )
 
 func init() {
-	categoryCmd.Flags().StringVarP(&cat.Name, "name", "n", "", "Category name")
-	categoryCmd.Flags().StringVarP(&cat.Description, "description", "d", "", "Category description")
+	categoryCmd.Flags().StringVarP(&cat.Name, "name", "n", "", "category name")
+	categoryCmd.Flags().StringVarP(&cat.Description, "description", "d", "", "category description")
 	categoryCmd.MarkFlagRequired("name")
 }

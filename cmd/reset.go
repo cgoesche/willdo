@@ -28,10 +28,8 @@ import (
 var (
 	resetCmd = &cobra.Command{
 		Use:   "reset [ID]",
-		Short: "Reset a task",
-		Long: `There is not much more to say about this or 
-are you looking for the entire commit history ?`,
-		Args: cobra.ExactArgs(1),
+		Short: "Reset a task's status",
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			db := database.New(conf.Database)
 

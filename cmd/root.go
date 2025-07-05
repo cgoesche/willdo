@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/cgoesche/willdo/app"
+	"github.com/cgoesche/willdo/cmd/edit"
 	"github.com/cgoesche/willdo/internal/bubbletea"
 	"github.com/cgoesche/willdo/internal/config"
 	"github.com/cgoesche/willdo/internal/database"
@@ -44,8 +45,7 @@ var (
 
 	rootCmd = &cobra.Command{
 		Use:     "willdo",
-		Short:   "A featureful command line to-do list manager",
-		Long:    `willdo is a featureful command line to-do list manager.`,
+		Short:   "A minimalist command line to-do list manager",
 		Version: app.Version,
 		CompletionOptions: cobra.CompletionOptions{
 			HiddenDefaultCmd: true,
@@ -106,15 +106,15 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().BoolVarP(&showAllTasks, "all", "a", false, "Show tasks from all categories")
-	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "Configuration file location")
-	rootCmd.PersistentFlags().StringVarP(&categoryName, "category", "c", "", "Category to list tasks of")
+	rootCmd.Flags().BoolVarP(&showAllTasks, "all", "a", false, "show tasks from all categories")
+	rootCmd.Flags().StringVar(&configFile, "config", "", "configuration file location")
+	rootCmd.Flags().StringVarP(&categoryName, "category", "c", category.DefaultCategoryTableName, "category to list tasks of")
 	rootCmd.MarkFlagsMutuallyExclusive("all", "category")
 
 	rootCmd.AddCommand(categoryCmd)
 	rootCmd.AddCommand(completeCmd)
 	rootCmd.AddCommand(deleteCmd)
-	rootCmd.AddCommand(editCmd)
+	rootCmd.AddCommand(edit.EditCmd)
 	rootCmd.AddCommand(resetCmd)
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(taskCmd)

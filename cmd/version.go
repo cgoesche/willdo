@@ -27,8 +27,6 @@ import (
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version number",
-	Long: `There is not much more to say about this or 
-are you looking for the entire commit history ?`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("%s version %s\n", app.Name, app.Version)
 	},

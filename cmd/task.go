@@ -32,8 +32,6 @@ var (
 	taskCmd = &cobra.Command{
 		Use:   "task",
 		Short: "Add a task",
-		Long: `There is not much more to say about this or 
-are you looking for the entire commit history ?`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			db := database.New(conf.Database)
 
@@ -78,13 +76,12 @@ are you looking for the entire commit history ?`,
 )
 
 func init() {
-	taskCmd.Flags().StringVarP(&categoryName, "category", "c", "", "task category")
+	taskCmd.Flags().StringVarP(&categoryName, "category", "c", category.DefaultCategoryTableName, "task category")
 	taskCmd.Flags().StringVarP(&t.Title, "title", "t", "", "task title")
 	taskCmd.Flags().StringVarP(&t.Description, "description", "d", "", "task description")
 	taskCmd.Flags().Int64VarP(&t.Status, "status", "s", 0, "task status (e.g. 0, 1, or 2)")
 	taskCmd.Flags().Int64VarP(&t.Priority, "priority", "p", 0, "task priority (e.g. 0, 1, or 2)")
-	taskCmd.Flags().IntVarP(&t.IsFavorite, "favorite", "f", 0, "Mark task as favorite")
+	taskCmd.Flags().IntVarP(&t.IsFavorite, "favorite", "f", 0, "mark task as favorite")
 
-	taskCmd.MarkFlagsOneRequired("title", "category")
-	taskCmd.MarkFlagsRequiredTogether("title", "category")
+	taskCmd.MarkFlagsOneRequired("title")
 }

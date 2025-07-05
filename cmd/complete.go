@@ -29,9 +29,7 @@ var (
 	completeCmd = &cobra.Command{
 		Use:   "complete [ID]",
 		Short: "Complete a task",
-		Long: `There is not much more to say about this or 
-are you looking for the entire commit history ?`,
-		Args: cobra.ExactArgs(1),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			db := database.New(conf.Database)
 
@@ -52,13 +50,13 @@ are you looking for the entire commit history ?`,
 				return fmt.Errorf("failed to get task %d, %v", id, err)
 			}
 
-			t.Status = int64(task.Doing)
-			ret, err := taskService.Update(t)
+			t.Status = int64(task.Done)
+			_, err = taskService.Update(t)
 			if err != nil {
 				return fmt.Errorf("failed to update task %d, %v", id, err)
 			}
 
-			fmt.Printf("Task %d marked as 'Done'!\n", ret)
+			fmt.Printf("Task marked as 'Done'!\n")
 			return nil
 		},
 	}

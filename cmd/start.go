@@ -29,9 +29,7 @@ var (
 	startCmd = &cobra.Command{
 		Use:   "start [ID]",
 		Short: "Start a task",
-		Long: `There is not much more to say about this or 
-are you looking for the entire commit history ?`,
-		Args: cobra.ExactArgs(1),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			db := database.New(conf.Database)
 
@@ -53,12 +51,12 @@ are you looking for the entire commit history ?`,
 			}
 
 			t.Status = int64(task.Doing)
-			ret, err := taskService.Update(t)
+			_, err = taskService.Update(t)
 			if err != nil {
 				return fmt.Errorf("failed to update task %d, %v", id, err)
 			}
 
-			fmt.Printf("Task %d msrked as 'Doing'!\n", ret)
+			fmt.Printf("Task marked as 'Doing'!\n")
 			return nil
 		},
 	}

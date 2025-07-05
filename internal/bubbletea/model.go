@@ -26,12 +26,13 @@ import (
 )
 
 type model struct {
-	lists            []list.Model
-	stats            statsModel
-	details          detailsModel
+	lists        []list.Model
+	selectedList int
+	stats        statsModel
+	details      detailsModel
+
 	CategoryService  *category.Service
 	TaskService      *task.Service
-	selectedList     int
 	Categories       category.Categories
 	CatNameToIDMap   category.CategoryNameToIDMap
 	CatIDToNameMap   category.CategoryIDToNameMap
@@ -75,7 +76,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.ShowStats = !m.ShowStats
 			return m, m.lists[m.selectedList].NewStatusMessage("Toggled 'Statistics' section")
 		case msg.String() == "ctrl+r":
-			return m.refreshTaskList()
+			if err := m.updateListItems(); err != nil {
+				return m, m.lists[m.selectedList].NewStatusMessage("Failed to refresh list refreshed")
+			}
+			return m, m.lists[m.selectedList].NewStatusMessage("List refreshed")
+
 		case msg.String() == "d":
 			return m.deleteTask(task)
 		case msg.String() == "c":
@@ -184,13 +189,6 @@ func (m *model) updateListItems() (err error) {
 	}
 	m.lists[m.selectedList].SetItems(l)
 	return nil
-}
-
-func (m model) refreshTaskList() (tea.Model, tea.Cmd) {
-	if err := m.updateListItems(); err != nil {
-		return m, m.lists[m.selectedList].NewStatusMessage("Failed to refresh list refreshed")
-	}
-	return m, m.lists[m.selectedList].NewStatusMessage("List refreshed")
 }
 
 func (m model) deleteTask(item list.Item) (tea.Model, tea.Cmd) {

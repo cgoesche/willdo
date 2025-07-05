@@ -31,8 +31,6 @@ var (
 	deleteCmd = &cobra.Command{
 		Use:   "delete [ category | task ]",
 		Short: "Delete a category or task",
-		Long: `There is not much more to say about this or 
-are you looking for the entire commit history ?`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			db := database.New(conf.Database)
 			catService := category.NewService(db)

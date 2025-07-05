@@ -25,7 +25,7 @@ import (
 
 const (
 	categoryTableName        string = "category"
-	defaultCategoryTableName string = "My List"
+	DefaultCategoryTableName string = "My List"
 	categoryTableSchema      string = `CREATE TABLE IF NOT EXISTS category (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	name TEXT NOT NULL,
@@ -55,7 +55,7 @@ func (r *Repository) Init() error {
 
 	// Create a default category row
 	var q = fmt.Sprintf("INSERT OR IGNORE INTO %s (id, name, description) VALUES (1, ?, ?);", r.tableName)
-	_, err = r.db.RawQuery(q, defaultCategoryTableName, "This is the default category")
+	_, err = r.db.RawQuery(q, DefaultCategoryTableName, "This is the default category")
 	if err != nil {
 		return err
 	}
