@@ -14,29 +14,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package edit
+package cmd
 
-import (
-	"github.com/cgoesche/willdo/internal/models"
-	"github.com/spf13/cobra"
-)
+import "github.com/spf13/cobra"
 
 var (
-	c = &models.Category{}
-
-	categoryCmd = &cobra.Command{
-		Use:   "category",
-		Short: "Edit a category",
+	editCmd = &cobra.Command{
+		Use:   "edit",
+		Short: "Edit a task or category",
+		Long: `With this command you can update details of 
+		existing tasks or categories.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return nil
 		},
 	}
 )
-
-func init() {
-	categoryCmd.Flags().Int64VarP(&c.ID, "id", "i", 0, "Category ID")
-	categoryCmd.Flags().StringVarP(&c.Name, "name", "n", "", "Category name")
-	categoryCmd.Flags().StringVarP(&c.Description, "description", "d", "", "Category description")
-
-	categoryCmd.MarkFlagRequired("id")
-}

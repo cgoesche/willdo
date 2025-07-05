@@ -18,8 +18,9 @@ package bubbletea
 
 import (
 	"github.com/cgoesche/willdo/internal/bubbletea/styles"
-	"github.com/cgoesche/willdo/internal/database"
-	"github.com/cgoesche/willdo/internal/models"
+
+	"github.com/cgoesche/willdo/internal/modules/category"
+	"github.com/cgoesche/willdo/internal/modules/task"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -28,11 +29,12 @@ type model struct {
 	lists            []list.Model
 	stats            statsModel
 	details          detailsModel
-	DbClient         *database.Client
+	CategoryService  *category.Service
+	TaskService      *task.Service
 	selectedList     int
-	Categories       models.Categories
-	CatNameToIDMap   models.CategoryNameToIDMap
-	CatIDToNameMap   models.CategoryIDToNameMap
+	Categories       category.Categories
+	CatNameToIDMap   category.CategoryNameToIDMap
+	CatIDToNameMap   category.CategoryIDToNameMap
 	SelectedCategory int64
 
 	ShowDetails  bool
@@ -113,12 +115,68 @@ func (m model) View() string {
 	return styles.DocStyle.Render(content)
 }
 
+func marshalTaskListItems(tasks task.Tasks) []list.Item {
+	var l []list.Item
+
+	for _, v := range tasks {
+		var i taskListItem
+		i.ID = v.ID
+		i.Tit = v.Title
+		i.Stat = v.Status
+		i.Prio = v.Priority
+		i.Desc = v.Description
+		i.Cat = v.Category
+		i.IsFav = v.IsFavorite
+
+		l = append(l, i)
+	}
+	return l
+}
+
+func unmarshalTaskListItem(item taskListItem) task.Task {
+	var t task.Task
+
+	t.ID = item.ID
+	t.Title = item.Tit
+	t.Status = item.Stat
+	t.Priority = item.Prio
+	t.Description = item.Desc
+	t.Category = item.Cat
+	t.IsFavorite = item.IsFav
+
+	return t
+}
+
+func (m model) getAllTaskListItems() ([]list.Item, error) {
+	var l []list.Item
+
+	tasks, err := m.TaskService.GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	l = marshalTaskListItems(tasks)
+	return l, nil
+}
+
+func (m model) getTaskListItemsByCategory(id int64) ([]list.Item, error) {
+	var l []list.Item
+
+	tasks, err := m.TaskService.GetAllByCategory(id)
+	if err != nil {
+		return nil, err
+	}
+
+	l = marshalTaskListItems(tasks)
+	return l, nil
+}
+
 func (m *model) updateListItems() (err error) {
 	var l []list.Item
 	if m.ShowAllTasks {
-		l, err = getAllTaskListItems(m.DbClient)
+		l, err = m.getAllTaskListItems()
 	} else {
-		l, err = getTaskListItemsByCategory(m.DbClient, m.SelectedCategory)
+		l, err = m.getTaskListItemsByCategory(m.SelectedCategory)
 	}
 
 	if err != nil {
@@ -141,7 +199,7 @@ func (m model) deleteTask(item list.Item) (tea.Model, tea.Cmd) {
 		return m, m.lists[m.selectedList].NewStatusMessage("Failed to delete task")
 	}
 
-	err := m.DbClient.DeleteTask(task.ID)
+	_, err := m.TaskService.Delete(task.ID)
 	if err != nil {
 		return m, m.lists[m.selectedList].NewStatusMessage("Failed to delete task")
 	}
@@ -153,12 +211,15 @@ func (m model) deleteTask(item list.Item) (tea.Model, tea.Cmd) {
 }
 
 func (m model) completeTask(item list.Item) (tea.Model, tea.Cmd) {
-	task, ok := item.(taskListItem)
+	t, ok := item.(taskListItem)
 	if !ok {
 		return m, m.lists[m.selectedList].NewStatusMessage("Failed to mark task as 'Done'")
 	}
 
-	_, err := m.DbClient.CompleteTask(int(task.ID))
+	tsk := unmarshalTaskListItem(t)
+	tsk.Status = int64(task.Done)
+
+	_, err := m.TaskService.Update(tsk)
 	if err != nil {
 		return m, m.lists[m.selectedList].NewStatusMessage("Failed to mark task as 'Done'")
 	}
@@ -170,12 +231,15 @@ func (m model) completeTask(item list.Item) (tea.Model, tea.Cmd) {
 }
 
 func (m model) startTask(item list.Item) (tea.Model, tea.Cmd) {
-	task, ok := item.(taskListItem)
+	t, ok := item.(taskListItem)
 	if !ok {
 		return m, m.lists[m.selectedList].NewStatusMessage("Failed to mark task as 'Doing'")
 	}
 
-	_, err := m.DbClient.StartTask(int(task.ID))
+	tsk := unmarshalTaskListItem(t)
+	tsk.Status = int64(task.Doing)
+
+	_, err := m.TaskService.Update(tsk)
 	if err != nil {
 		return m, m.lists[m.selectedList].NewStatusMessage("Failed to mark task as 'Doing'")
 	}
@@ -187,12 +251,15 @@ func (m model) startTask(item list.Item) (tea.Model, tea.Cmd) {
 }
 
 func (m model) resetTask(item list.Item) (tea.Model, tea.Cmd) {
-	task, ok := item.(taskListItem)
+	t, ok := item.(taskListItem)
 	if !ok {
 		return m, m.lists[m.selectedList].NewStatusMessage("Failed to mark task as 'Todo'")
 	}
 
-	_, err := m.DbClient.ResetTask(int(task.ID))
+	tsk := unmarshalTaskListItem(t)
+	tsk.Status = int64(task.ToDo)
+
+	_, err := m.TaskService.Update(tsk)
 	if err != nil {
 		return m, m.lists[m.selectedList].NewStatusMessage("Failed to mark task as 'Todo'")
 	}
@@ -204,20 +271,23 @@ func (m model) resetTask(item list.Item) (tea.Model, tea.Cmd) {
 }
 
 func (m model) toggleTaskFavStatus(item list.Item) (tea.Model, tea.Cmd) {
-	task, ok := item.(taskListItem)
+	t, ok := item.(taskListItem)
 	if !ok {
 		return m, m.lists[m.selectedList].NewStatusMessage("Failed to mark task as 'Favorite'")
 	}
 
 	var favStatus int
-	switch task.IsFav {
-	case models.IsFavorite:
-		favStatus = models.IsNotFavorite
-	case models.IsNotFavorite:
-		favStatus = models.IsFavorite
+	switch t.IsFav {
+	case task.IsFavorite:
+		favStatus = task.IsNotFavorite
+	case task.IsNotFavorite:
+		favStatus = task.IsFavorite
 	}
 
-	_, err := m.DbClient.ToggleTaskFavoriteStatus(task.ID, favStatus)
+	tsk := unmarshalTaskListItem(t)
+	tsk.IsFavorite = favStatus
+
+	_, err := m.TaskService.Update(tsk)
 	if err != nil {
 		return m, m.lists[m.selectedList].NewStatusMessage("Failed to mark task as 'Favorite'")
 	}

@@ -22,8 +22,9 @@ import (
 	"strings"
 
 	"github.com/cgoesche/willdo/internal/bubbletea/styles"
-	"github.com/cgoesche/willdo/internal/database"
-	"github.com/cgoesche/willdo/internal/models"
+	"github.com/cgoesche/willdo/internal/modules/category"
+	"github.com/cgoesche/willdo/internal/modules/task"
+
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/x/ansi"
@@ -56,7 +57,7 @@ func (i taskListItem) FilterValue() string { return i.Tit }
 type taskItemDelegate struct {
 	height       int
 	spacing      int
-	categories   models.Categories
+	categories   category.Categories
 	showCategory bool
 }
 
@@ -82,7 +83,7 @@ func (d taskItemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd {
 }
 
 func (d taskItemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	task, ok := listItem.(taskListItem)
+	t, ok := listItem.(taskListItem)
 	if !ok {
 		return
 	}
@@ -90,29 +91,29 @@ func (d taskItemDelegate) Render(w io.Writer, m list.Model, index int, listItem 
 	var str string
 	num := fmt.Sprintf("%   3d.", index+1)
 	num = styles.SubtleStyle.Render(num)
-	title := ansi.Truncate(task.Title(), m.Width()/2, ellipsis)
-	statusIcon := styles.RenderStatusIcon(models.Status(task.Status()))
+	title := ansi.Truncate(t.Title(), m.Width()/2, ellipsis)
+	statusIcon := styles.RenderStatusIcon(task.Status(t.Stat))
 
-	if task.Priority() == int64(models.High) && task.Status() != int64(models.Done) {
+	if t.Priority() == int64(task.High) && t.Status() != int64(task.Done) {
 		title = styles.HighPriorityStyle.Render(title)
 	}
 
-	if task.Status() == int64(models.Done) {
+	if t.Status() == int64(task.Done) {
 		title = styles.SubtleStyle.Render(title)
 	}
 
 	str = fmt.Sprintf("%s %s %s", num, statusIcon, title)
 
-	if task.IsFavorite() == models.IsFavorite {
-		str += styles.FavoriteIconStyle.Render(" " + models.FavoriteIcon)
+	if t.IsFavorite() == task.IsFavorite {
+		str += styles.FavoriteIconStyle.Render(" " + task.FavoriteIcon)
 	}
 
-	if task.Description() != "" {
-		str += styles.NoteIndicatorStyle.Render(" " + models.NoteIndicatorIcon)
+	if t.Description() != "" {
+		str += styles.NoteIndicatorStyle.Render(" " + task.NoteIndicatorIcon)
 	}
 
 	if d.showCategory {
-		str += styles.TaskCategoryNameStyle.Render("[" + models.GetCategoryNameFromID(d.categories, task.Cat) + "]")
+		str += styles.TaskCategoryNameStyle.Render("[" + category.GetCategoryNameFromID(d.categories, t.Cat) + "]")
 	}
 
 	fn := styles.ItemStyle.Render
@@ -130,46 +131,4 @@ func (d *taskItemDelegate) SetHeight(h int) {
 
 func (d *taskItemDelegate) SetSpacing(s int) {
 	d.spacing = s
-}
-
-func marshalTaskListItems(tasks models.Tasks) []list.Item {
-	var l []list.Item
-
-	for _, v := range tasks {
-		var i taskListItem
-		i.ID = v.ID
-		i.Tit = v.Title
-		i.Stat = v.Status
-		i.Prio = v.Priority
-		i.Desc = v.Description
-		i.Cat = v.Category
-		i.IsFav = v.IsFavorite
-
-		l = append(l, i)
-	}
-	return l
-}
-
-func getAllTaskListItems(c *database.Client) ([]list.Item, error) {
-	var l []list.Item
-
-	tasks, err := c.QueryAllTasks()
-	if err != nil {
-		return nil, err
-	}
-
-	l = marshalTaskListItems(tasks)
-	return l, nil
-}
-
-func getTaskListItemsByCategory(c *database.Client, id int64) ([]list.Item, error) {
-	var l []list.Item
-
-	tasks, err := c.QueryTasksFromCategory(id)
-	if err != nil {
-		return nil, err
-	}
-
-	l = marshalTaskListItems(tasks)
-	return l, nil
 }

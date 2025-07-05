@@ -14,19 +14,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package add
+package cmd
 
 import (
 	"fmt"
+	"strings"
 
-	"github.com/cgoesche/willdo/internal/config"
 	"github.com/cgoesche/willdo/internal/database"
-	"github.com/cgoesche/willdo/internal/models"
+	"github.com/cgoesche/willdo/internal/modules/category"
 	"github.com/spf13/cobra"
 )
 
 var (
-	cat = &models.Category{}
+	cat = &category.Category{}
 
 	categoryCmd = &cobra.Command{
 		Use:   "category",
@@ -34,17 +34,24 @@ var (
 		Long: `There is not much more to say about this or 
 are you looking for the entire commit history ?`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client := database.NewClient()
-			err := client.InitDB(config.SetDefault().Database.Path)
+			db := database.New(conf.Database)
+			catService := category.NewService(db)
+
+			err := catService.InitRepo()
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to init category service repository, %v", err)
 			}
 
-			if err = addCategory(client, *cat); err != nil {
+			if strings.TrimSpace(cat.Name) == "" {
+				return fmt.Errorf("category name cannot be an empty string")
+			}
+
+			var id int64
+			if id, err = catService.Create(*cat); err != nil {
 				return fmt.Errorf("failed to add category: %v", err)
 			}
 
-			fmt.Println("Category added!")
+			fmt.Printf("Category %d added!\n", id)
 			return nil
 		},
 	}
@@ -54,12 +61,4 @@ func init() {
 	categoryCmd.Flags().StringVarP(&cat.Name, "name", "n", "", "Category name")
 	categoryCmd.Flags().StringVarP(&cat.Description, "description", "d", "", "Category description")
 	categoryCmd.MarkFlagRequired("name")
-}
-
-func addCategory(client *database.Client, cat models.Category) error {
-	_, err := client.InsertRow(cat)
-	if err != nil {
-		return err
-	}
-	return nil
 }

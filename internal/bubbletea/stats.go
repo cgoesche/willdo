@@ -21,7 +21,7 @@ import (
 	"strconv"
 
 	"github.com/cgoesche/willdo/internal/bubbletea/styles"
-	"github.com/cgoesche/willdo/internal/models"
+	"github.com/cgoesche/willdo/internal/modules/task"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -68,11 +68,11 @@ func (s *statsModel) storeTaskStats() error {
 		}
 
 		switch i.Status() {
-		case int64(models.ToDo):
+		case int64(task.ToDo):
 			s.stats.Todo++
-		case int64(models.Doing):
+		case int64(task.Doing):
 			s.stats.Doing++
-		case int64(models.Done):
+		case int64(task.Done):
 			s.stats.Done++
 
 		}

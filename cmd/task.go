@@ -18,15 +18,16 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
-	"github.com/cgoesche/willdo/internal/config"
 	"github.com/cgoesche/willdo/internal/database"
-	"github.com/cgoesche/willdo/internal/models"
+	"github.com/cgoesche/willdo/internal/modules/category"
+	"github.com/cgoesche/willdo/internal/modules/task"
 	"github.com/spf13/cobra"
 )
 
 var (
-	t = &models.Task{}
+	t = &task.Task{}
 
 	taskCmd = &cobra.Command{
 		Use:   "task",
@@ -34,52 +35,56 @@ var (
 		Long: `There is not much more to say about this or 
 are you looking for the entire commit history ?`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client := database.NewClient()
-			err := client.InitDB(config.SetDefault().Database.Path)
+			db := database.New(conf.Database)
+
+			catService := category.NewService(db)
+			taskService := task.NewService(db)
+
+			err := catService.InitRepo()
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to init category service repository, %v", err)
+			}
+			err = taskService.InitRepo()
+			if err != nil {
+				return fmt.Errorf("failed to init task service repository, %v", err)
 			}
 
-			cat, err := client.QueryCategoryByName(categoryName)
-			if err != nil {
-				return fmt.Errorf("no category found with name '%s', %v", categoryName, err)
+			if strings.TrimSpace(categoryName) == "" {
+				return fmt.Errorf("category name cannot be an empty string")
 			}
-			t.Category = cat.ID
 
-			if err = addTask(client, *t); err != nil {
+			cats, err := catService.GetAll()
+			if err != nil {
+				return fmt.Errorf("failed to find any categories in the database, %v", err)
+			}
+			var categoryID int64
+			if categoryName != "" {
+				categoryID = category.GetCategoryIDFromName(cats, categoryName)
+				if categoryID == 0 {
+					return fmt.Errorf("no category found with name '%s'", categoryName)
+				}
+			}
+			t.Category = categoryID
+
+			var id int64
+			if id, err = taskService.Create(*t); err != nil {
 				return fmt.Errorf("failed to add task: %v", err)
 			}
 
-			fmt.Println("Task added!")
+			fmt.Printf("Task %d added!\n", id)
 			return nil
 		},
 	}
 )
 
 func init() {
-	taskCmd.Flags().StringVarP(&categoryName, "category", "c", "", "Task category")
-	taskCmd.Flags().StringVarP(&t.Title, "title", "t", "", "Task title")
-	taskCmd.Flags().StringVarP(&t.Description, "description", "d", "", "Task description")
-	taskCmd.Flags().Int64VarP(&t.Status, "status", "s", 0, "Task status")
-	taskCmd.Flags().Int64VarP(&t.Priority, "priority", "p", 0, "Task priority")
+	taskCmd.Flags().StringVarP(&categoryName, "category", "c", "", "task category")
+	taskCmd.Flags().StringVarP(&t.Title, "title", "t", "", "task title")
+	taskCmd.Flags().StringVarP(&t.Description, "description", "d", "", "task description")
+	taskCmd.Flags().Int64VarP(&t.Status, "status", "s", 0, "task status (e.g. 0, 1, or 2)")
+	taskCmd.Flags().Int64VarP(&t.Priority, "priority", "p", 0, "task priority (e.g. 0, 1, or 2)")
 	taskCmd.Flags().IntVarP(&t.IsFavorite, "favorite", "f", 0, "Mark task as favorite")
 
 	taskCmd.MarkFlagsOneRequired("title", "category")
 	taskCmd.MarkFlagsRequiredTogether("title", "category")
-}
-
-func addTask(c *database.Client, t models.Task) error {
-	if t.Status > int64(models.Done) || t.Status < int64(models.ToDo) {
-		return fmt.Errorf("invalid status value")
-	}
-
-	if t.Priority < int64(models.Low) || t.Status > int64(models.Urgent) {
-		return fmt.Errorf("invalid priority value")
-	}
-
-	id, err := c.InsertRow(t)
-	if err != nil || id == -1 {
-		return err
-	}
-	return nil
 }

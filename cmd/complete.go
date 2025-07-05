@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/cgoesche/willdo/internal/config"
 	"github.com/cgoesche/willdo/internal/database"
+	"github.com/cgoesche/willdo/internal/modules/task"
 	"github.com/spf13/cobra"
 )
 
@@ -33,10 +33,13 @@ var (
 are you looking for the entire commit history ?`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client := database.NewClient()
-			err := client.InitDB(config.SetDefault().Database.Path)
+			db := database.New(conf.Database)
+
+			taskService := task.NewService(db)
+
+			err := taskService.InitRepo()
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to init task service repository, %v", err)
 			}
 
 			id, err := strconv.Atoi(args[0])
@@ -44,12 +47,18 @@ are you looking for the entire commit history ?`,
 				return fmt.Errorf("invalid task ID")
 			}
 
-			_, err = client.CompleteTask(id)
+			t, err := taskService.GetById(int64(id))
 			if err != nil {
-				return fmt.Errorf("failed to mark task as completed, %v", err)
+				return fmt.Errorf("failed to get task %d, %v", id, err)
 			}
 
-			fmt.Printf("Task %d marked as completed!\n", id)
+			t.Status = int64(task.Doing)
+			ret, err := taskService.Update(t)
+			if err != nil {
+				return fmt.Errorf("failed to update task %d, %v", id, err)
+			}
+
+			fmt.Printf("Task %d marked as 'Done'!\n", ret)
 			return nil
 		},
 	}

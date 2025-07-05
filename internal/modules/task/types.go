@@ -14,7 +14,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package models
+package task
+
+type Task struct {
+	ID          int64
+	Title       string
+	Description string
+	Priority    int64
+	Status      int64
+	Category    int64
+	IsFavorite  int
+}
+
+type Tasks []Task
 
 type Priority int64
 
@@ -22,7 +34,6 @@ const (
 	Low Priority = iota
 	Medium
 	High
-	Urgent
 )
 
 type Status int64
@@ -46,15 +57,3 @@ var (
 
 	NoteIndicatorIcon = "🛈"
 )
-
-type Task struct {
-	ID          int64
-	Title       string
-	Description string
-	Priority    int64
-	Status      int64
-	Category    int64
-	IsFavorite  int
-}
-
-type Tasks []Task

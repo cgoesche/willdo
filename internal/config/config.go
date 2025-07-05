@@ -19,12 +19,13 @@ package config
 import (
 	"os"
 	"path/filepath"
-
-	"github.com/cgoesche/willdo/internal/database"
 )
 
 type Database struct {
-	Path string `mapstructure:"filepath"`
+	Type     string `mapstructure:"type"`
+	NetAddr  string `mapstructure:"address"`
+	Port     int    `mapstructure:"port"`
+	Filepath string `mapstructure:"filepath"`
 }
 
 type Config struct {
@@ -33,11 +34,12 @@ type Config struct {
 
 func SetDefault() Config {
 	dir, _ := os.UserHomeDir()
-	dbFilePath := filepath.Join(dir, database.DatabaseFileName)
+	dbFilePath := filepath.Join(dir, "willdo.db")
 
 	return Config{
 		Database: Database{
-			Path: dbFilePath,
+			Type:     "sqlite",
+			Filepath: dbFilePath,
 		},
 	}
 }

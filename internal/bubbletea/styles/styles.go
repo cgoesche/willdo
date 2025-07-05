@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package styles
 
 import (
-	"github.com/cgoesche/willdo/internal/models"
+	"github.com/cgoesche/willdo/internal/modules/task"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -62,17 +62,17 @@ func DefaultStyles() list.Styles {
 	return s
 }
 
-func RenderStatusIcon(s models.Status) string {
+func RenderStatusIcon(s task.Status) string {
 	var style lipgloss.Style
 
 	switch s {
-	case models.ToDo:
+	case task.ToDo:
 		style = TodoStyle
-	case models.Doing:
+	case task.Doing:
 		style = DoingStyle
-	case models.Done:
+	case task.Done:
 		style = DoneStyle
 
 	}
-	return style.Render(models.StatusMap[models.Status(s)])
+	return style.Render(task.StatusMap[task.Status(s)])
 }

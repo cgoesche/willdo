@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/cgoesche/willdo/internal/bubbletea/styles"
-	"github.com/cgoesche/willdo/internal/models"
+	"github.com/cgoesche/willdo/internal/modules/category"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -37,12 +37,12 @@ func Run(m model) {
 	var l []list.Item
 	var err error
 	if m.ShowAllTasks {
-		l, err = getAllTaskListItems(m.DbClient)
+		l, err = m.getAllTaskListItems()
 		m.lists[m.selectedList].Title = "All tasks"
 		d.showCategory = true
 	} else {
-		l, err = getTaskListItemsByCategory(m.DbClient, m.SelectedCategory)
-		m.lists[m.selectedList].Title = models.GetCategoryNameFromID(m.Categories, m.SelectedCategory)
+		l, err = m.getTaskListItemsByCategory(m.SelectedCategory)
+		m.lists[m.selectedList].Title = category.GetCategoryNameFromID(m.Categories, m.SelectedCategory)
 	}
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
@@ -55,7 +55,7 @@ func Run(m model) {
 	m.lists[m.selectedList].SetFilteringEnabled(false)
 	m.details.selectedItem = m.lists[m.selectedList].SelectedItem()
 
-	p := tea.NewProgram(m)
+	p := tea.NewProgram(m, tea.WithAltScreen())
 	_, err = p.Run()
 	if err != nil {
 		fmt.Println("Error running program:", err)

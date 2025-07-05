@@ -22,13 +22,11 @@ import (
 	"strings"
 
 	"github.com/cgoesche/willdo/app"
-	"github.com/cgoesche/willdo/cmd/add"
-	"github.com/cgoesche/willdo/cmd/del"
-	"github.com/cgoesche/willdo/cmd/edit"
 	"github.com/cgoesche/willdo/internal/bubbletea"
 	"github.com/cgoesche/willdo/internal/config"
 	"github.com/cgoesche/willdo/internal/database"
-	"github.com/cgoesche/willdo/internal/models"
+	"github.com/cgoesche/willdo/internal/modules/category"
+	"github.com/cgoesche/willdo/internal/modules/task"
 
 	"os"
 
@@ -38,7 +36,8 @@ import (
 
 var (
 	configFile   string
-	databaseFile string
+	taskID       int64
+	categoryID   int64
 	categoryName string
 	showAllTasks bool
 	conf         config.Config
@@ -52,20 +51,27 @@ var (
 			HiddenDefaultCmd: true,
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client := database.NewClient()
-			err := client.InitDB(config.SetDefault().Database.Path)
+			db := database.New(conf.Database)
+			catService := category.NewService(db)
+			taskService := task.NewService(db)
+
+			err := catService.InitRepo()
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to init category service repository, %v", err)
+			}
+			err = taskService.InitRepo()
+			if err != nil {
+				return fmt.Errorf("failed to init task service repository, %v", err)
 			}
 
-			cats, err := client.QueryCategories()
+			cats, err := catService.GetAll()
 			if err != nil {
 				return fmt.Errorf("failed to find any categories in the database, %v", err)
 			}
 
 			var categoryID int64
 			if categoryName != "" {
-				categoryID = models.GetCategoryIDFromName(cats, categoryName)
+				categoryID = category.GetCategoryIDFromName(cats, categoryName)
 				if categoryID == 0 {
 					return fmt.Errorf("no category found with name '%s'", categoryName)
 				}
@@ -74,9 +80,10 @@ var (
 			}
 
 			m := bubbletea.InitialModel()
-			m.DbClient = client
-			m.CatNameToIDMap = models.NewCategoryNameToIDMap(cats)
-			m.CatIDToNameMap = models.NewCategoryIDToNameMap(cats)
+			m.TaskService = taskService
+			m.CategoryService = catService
+			m.CatNameToIDMap = category.NewCategoryNameToIDMap(cats)
+			m.CatIDToNameMap = category.NewCategoryIDToNameMap(cats)
 			m.Categories = cats
 			m.ShowAllTasks = showAllTasks
 			m.SelectedCategory = categoryID
@@ -104,12 +111,10 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&categoryName, "category", "c", "", "Category to list tasks of")
 	rootCmd.MarkFlagsMutuallyExclusive("all", "category")
 
-	viper.BindPFlag("database.path", rootCmd.PersistentFlags().Lookup("database"))
-
-	rootCmd.AddCommand(add.AddCmd)
+	rootCmd.AddCommand(categoryCmd)
 	rootCmd.AddCommand(completeCmd)
-	rootCmd.AddCommand(del.DeleteCmd)
-	rootCmd.AddCommand(edit.EditCmd)
+	rootCmd.AddCommand(deleteCmd)
+	rootCmd.AddCommand(editCmd)
 	rootCmd.AddCommand(resetCmd)
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(taskCmd)
@@ -128,7 +133,7 @@ func initConfig() {
 		var configPath = filepath.Join(configDir, app.Name)
 		viper.AddConfigPath(configPath)
 		viper.SetConfigType("yaml")
-		viper.SetConfigName("config")
+		viper.SetConfigName("config.yaml")
 	}
 
 	viper.SetEnvPrefix(app.Name)
