@@ -24,7 +24,7 @@ import (
 
 var (
 	NormalColor      = lipgloss.Color("#F8F8F2")
-	LightSubtleColor = lipgloss.Color("#8c8c8c")
+	LightSubtleColor = lipgloss.Color("#6272A4")
 	SubtleColor      = lipgloss.Color("#4d4d4d")
 	SpecialColor     = lipgloss.Color("#50FA7B")
 	HighlightColor   = lipgloss.Color("#BD93F9")
@@ -35,7 +35,7 @@ var (
 	TitleBarStyle           = lipgloss.NewStyle().PaddingTop(1)
 	ListTitleStyle          = lipgloss.NewStyle().Foreground(SpecialColor).Underline(true).Bold(true)
 	DetailSectionTitleStyle = lipgloss.NewStyle().Foreground(SubtleColor).PaddingBottom(1).Underline(true).Bold(true)
-	TaskCategoryNameStyle   = lipgloss.NewStyle().Foreground(SubtleColor).PaddingLeft(1)
+	TaskCategoryNameStyle   = lipgloss.NewStyle().Foreground(LightSubtleColor).PaddingLeft(1)
 	ItemStyle               = lipgloss.NewStyle().PaddingLeft(2)
 	SelectedItemStyle       = lipgloss.NewStyle().PaddingLeft(1).Foreground(lipgloss.Color("170")).Bold(true)
 	TaskIdentityStyle       = lipgloss.NewStyle().PaddingLeft(2).Foreground(SubtleColor)

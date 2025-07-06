@@ -32,15 +32,16 @@ const (
 )
 
 type statsBar struct {
-	Todo     int
-	Doing    int
-	Done     int
-	Progress float64
+	Todo        int
+	Doing       int
+	Done        int
+	Progress    float64
+	IsFiltering bool
 }
 
 type statsModel struct {
-	list  []list.Item
-	stats statsBar
+	list []list.Item
+	bar  statsBar
 }
 
 func (s statsModel) Init() tea.Cmd {
@@ -69,44 +70,48 @@ func (s *statsModel) storeTaskStats() error {
 
 		switch i.Status() {
 		case int64(task.ToDo):
-			s.stats.Todo++
+			s.bar.Todo++
 		case int64(task.Doing):
-			s.stats.Doing++
+			s.bar.Doing++
 		case int64(task.Done):
-			s.stats.Done++
+			s.bar.Done++
 
 		}
 	}
 
 	if len(l) == 0 {
-		s.stats.Progress = 0
+		s.bar.Progress = 0
 	} else {
-		s.stats.Progress = (float64(s.stats.Done) / float64(len(l))) * 100
+		s.bar.Progress = (float64(s.bar.Done) / float64(len(l))) * 100
 	}
 	return nil
 }
 
 func (s *statsModel) renderStatsBar() string {
-	var todo, doing, done, prog string
+	var todo, doing, done, prog, filterIndicator string
 	s.storeTaskStats()
 
-	todo = lipgloss.NewStyle().Foreground(styles.LightSubtleColor).Render("Todo ")
-	doing = lipgloss.NewStyle().Foreground(styles.LightSubtleColor).Render("Doing ")
-	done = lipgloss.NewStyle().Foreground(styles.LightSubtleColor).Render("Done ")
-	prog = lipgloss.NewStyle().Foreground(styles.LightSubtleColor).Render("Progress ")
+	todo = lipgloss.NewStyle().Foreground(styles.SubtleColor).Render("Todo ")
+	doing = lipgloss.NewStyle().Foreground(styles.SubtleColor).Render("Doing ")
+	done = lipgloss.NewStyle().Foreground(styles.SubtleColor).Render("Done ")
+	prog = lipgloss.NewStyle().Foreground(styles.SubtleColor).Render("Progress ")
 
-	todo += styles.TodoStyle.Render(strconv.Itoa(s.stats.Todo))
-	doing += styles.DoingStyle.Render(strconv.Itoa(s.stats.Doing))
-	done += styles.DoneStyle.Render(strconv.Itoa(s.stats.Done))
+	todo += styles.TodoStyle.Render(strconv.Itoa(s.bar.Todo))
+	doing += styles.DoingStyle.Render(strconv.Itoa(s.bar.Doing))
+	done += styles.DoneStyle.Render(strconv.Itoa(s.bar.Done))
 
-	p := int(s.stats.Progress)
-	if p >= 70 {
-		prog += styles.DoneStyle.Render(strconv.Itoa(int(s.stats.Progress)) + "%")
-	} else if p > 30 && p < 70 {
-		prog += lipgloss.NewStyle().Foreground(styles.NoticeColor).Render(strconv.Itoa(int(s.stats.Progress)) + "%")
-	} else {
-		prog += lipgloss.NewStyle().Foreground(styles.WarningColor).Render(strconv.Itoa(int(s.stats.Progress)) + "%")
+	if s.bar.IsFiltering {
+		filterIndicator = lipgloss.NewStyle().Foreground(styles.LightSubtleColor).Render("[ Filter active ]")
 	}
 
-	return fmt.Sprintf("%s %s %s %s %s %s %s", todo, separator, doing, separator, done, separator, prog)
+	p := int(s.bar.Progress)
+	if p >= 70 {
+		prog += styles.DoneStyle.Render(strconv.Itoa(int(s.bar.Progress)) + "%")
+	} else if p > 30 && p < 70 {
+		prog += lipgloss.NewStyle().Foreground(styles.NoticeColor).Render(strconv.Itoa(int(s.bar.Progress)) + "%")
+	} else {
+		prog += lipgloss.NewStyle().Foreground(styles.WarningColor).Render(strconv.Itoa(int(s.bar.Progress)) + "%")
+	}
+
+	return fmt.Sprintf("%s %s %s %s %s %s %s %s", todo, separator, doing, separator, done, separator, prog, filterIndicator)
 }

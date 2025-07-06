@@ -205,6 +205,7 @@ func (m model) View() string {
 	}
 
 	if m.ShowStats {
+		m.stats.bar.IsFiltering = m.IsFiltering
 		m.stats.updateList(m.list.Items())
 		content += m.stats.View()
 	}

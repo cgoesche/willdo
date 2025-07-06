@@ -19,7 +19,7 @@ package app
 const (
 	Name        = "willdo"
 	Description = "A minimal command line to-do list manager"
-	Version     = "0.3.4"
+	Version     = "0.3.5"
 	Author      = "Christian Goeschel Ndjomouo"
 	License     = "GPLv3"
 )
