@@ -44,6 +44,13 @@ const (
 	Done
 )
 
+type FavoriteFlag int
+
+const (
+	IsNotFavorite FavoriteFlag = iota
+	IsFavorite
+)
+
 var (
 	StatusMap map[Status]string = map[Status]string{
 		ToDo:  "☐",
@@ -51,9 +58,6 @@ var (
 		Done:  "✔",
 	}
 
-	FavoriteIcon  = "★"
-	IsFavorite    = 1
-	IsNotFavorite = 0
-
+	FavoriteIcon      = "★"
 	NoteIndicatorIcon = "🛈"
 )

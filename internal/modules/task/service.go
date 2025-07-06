@@ -122,6 +122,15 @@ func (s *Service) GetAllByCategory(cat int64) (Tasks, error) {
 	return tasks, nil
 }
 
+func (s *Service) GetAllWithFilter(cat int64, filter any) (Tasks, error) {
+	var tasks Tasks
+	tasks, err := s.repo.GetAllWithFilter(cat, filter)
+	if err != nil {
+		return nil, err
+	}
+	return tasks, nil
+}
+
 func (s *Service) Update(t Task) (int64, error) {
 	if err := validateTask(t); err != nil {
 		return -1, err

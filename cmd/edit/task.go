@@ -81,7 +81,7 @@ var (
 			if err != nil {
 				return fmt.Errorf("failed to update task %d, %v", id, err)
 			}
-			fmt.Printf("Task updated!")
+			fmt.Printf("Task %d updated!\n", taskID)
 			return nil
 		},
 	}

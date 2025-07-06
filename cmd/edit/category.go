@@ -66,7 +66,7 @@ var (
 			if err != nil {
 				return fmt.Errorf("failed to update category %d, %v", id, err)
 			}
-			fmt.Printf("Category updated!\n")
+			fmt.Printf("Category '%s' updated!\n", categoryName)
 			return nil
 		},
 	}

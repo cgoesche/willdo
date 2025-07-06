@@ -21,13 +21,14 @@ import (
 	"os"
 	"time"
 
+	"github.com/cgoesche/willdo/internal/bubbletea/keys"
 	"github.com/cgoesche/willdo/internal/bubbletea/styles"
-	"github.com/cgoesche/willdo/internal/modules/category"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func Run(m model) {
+	m.KeyMap = keys.DefaultKeyMap
 	d := newTaskItemDelegate()
 	d.categories = m.Categories
 	defaultList := list.New([]list.Item{}, d, 0, 0)
@@ -42,7 +43,7 @@ func Run(m model) {
 		d.showCategory = true
 	} else {
 		l, err = m.getTaskListItemsByCategory(m.SelectedCategory)
-		m.lists[m.selectedList].Title = category.GetCategoryNameFromID(m.Categories, m.SelectedCategory)
+		m.lists[m.selectedList].Title = m.listTitle()
 	}
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
@@ -53,6 +54,10 @@ func Run(m model) {
 	m.lists[m.selectedList].StatusMessageLifetime = 3 * time.Second
 	m.lists[m.selectedList].SetShowFilter(false)
 	m.lists[m.selectedList].SetFilteringEnabled(false)
+	m.lists[m.selectedList].InfiniteScrolling = true
+	m.lists[m.selectedList].AdditionalShortHelpKeys = m.KeyMap.ShortHelpKeys
+	m.lists[m.selectedList].AdditionalFullHelpKeys = m.KeyMap.FullHelpKeys
+
 	m.details.selectedItem = m.lists[m.selectedList].SelectedItem()
 
 	p := tea.NewProgram(m, tea.WithAltScreen())

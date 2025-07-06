@@ -168,6 +168,46 @@ func (r *Repository) GetAllByCategory(cat int64) (Tasks, error) {
 	return tasks, nil
 }
 
+func (r *Repository) GetAllWithFilter(cat int64, filter any) (Tasks, error) {
+	var tasks Tasks
+	var q = fmt.Sprintf("SELECT * FROM %s WHERE", r.tableName)
+	var arg any
+
+	if cat >= 0 {
+		q += fmt.Sprintf(" category = %d AND", cat)
+	}
+
+	switch v := filter.(type) {
+	case Status:
+		q += " status = ?"
+		arg = v
+	case Priority:
+		q += " priority = ?"
+		arg = v
+	case FavoriteFlag:
+		q += " isfavorite = ?"
+		arg = v
+	default:
+		return tasks, fmt.Errorf("unknown filter type %v", v)
+	}
+
+	rows, err := r.db.RawRowsQuery(q, arg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query %s table: %v", r.tableName, err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var t Task
+		err := rows.Scan(&t.ID, &t.Title, &t.Description, &t.Status, &t.Priority, &t.Category, &t.IsFavorite)
+		if err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, t)
+	}
+	return tasks, nil
+}
+
 func (r *Repository) Update(t Task) (int64, error) {
 	var q = fmt.Sprintf("UPDATE %s SET title = ?, description = ?, status = ?, priority = ?, category = ?, isfavorite = ? WHERE id = ?;", r.tableName)
 	res, err := r.db.RawQuery(q, t.Title, t.Description, t.Status,

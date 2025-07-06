@@ -104,7 +104,7 @@ func (d taskItemDelegate) Render(w io.Writer, m list.Model, index int, listItem 
 
 	str = fmt.Sprintf("%s %s %s", num, statusIcon, title)
 
-	if t.IsFavorite() == task.IsFavorite {
+	if t.IsFavorite() == int(task.IsFavorite) {
 		str += styles.FavoriteIconStyle.Render(" " + task.FavoriteIcon)
 	}
 
@@ -131,4 +131,36 @@ func (d *taskItemDelegate) SetHeight(h int) {
 
 func (d *taskItemDelegate) SetSpacing(s int) {
 	d.spacing = s
+}
+
+func marshalTaskListItems(tasks task.Tasks) []list.Item {
+	var l []list.Item
+
+	for _, v := range tasks {
+		var i taskListItem
+		i.ID = v.ID
+		i.Tit = v.Title
+		i.Stat = v.Status
+		i.Prio = v.Priority
+		i.Desc = v.Description
+		i.Cat = v.Category
+		i.IsFav = v.IsFavorite
+
+		l = append(l, i)
+	}
+	return l
+}
+
+func unmarshalTaskListItem(item taskListItem) task.Task {
+	var t task.Task
+
+	t.ID = item.ID
+	t.Title = item.Tit
+	t.Status = item.Stat
+	t.Priority = item.Prio
+	t.Description = item.Desc
+	t.Category = item.Cat
+	t.IsFavorite = item.IsFav
+
+	return t
 }
