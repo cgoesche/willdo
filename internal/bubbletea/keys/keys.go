@@ -19,24 +19,29 @@ package keys
 import "github.com/charmbracelet/bubbles/key"
 
 type KeyMap struct {
-	ClearFilter     key.Binding
-	CompleteTask    key.Binding
-	DeleteTask      key.Binding
-	FilterToDo      key.Binding
-	FilterDoing     key.Binding
-	FilterDone      key.Binding
-	FilterFav       key.Binding
-	NextCategory    key.Binding
-	PrevCategory    key.Binding
-	ResetTask       key.Binding
-	RefreshList     key.Binding
-	StartTask       key.Binding
-	ToggleFavStatus key.Binding
-	ToggleDetails   key.Binding
-	ToggleStats     key.Binding
+	ClearCompletedTasks key.Binding
+	ClearFilter         key.Binding
+	CompleteTask        key.Binding
+	DeleteTask          key.Binding
+	FilterToDo          key.Binding
+	FilterDoing         key.Binding
+	FilterDone          key.Binding
+	FilterFav           key.Binding
+	NextCategory        key.Binding
+	PrevCategory        key.Binding
+	ResetTask           key.Binding
+	RefreshList         key.Binding
+	StartTask           key.Binding
+	ToggleFavStatus     key.Binding
+	ToggleDetails       key.Binding
+	ToggleStats         key.Binding
 }
 
 var DefaultKeyMap = KeyMap{
+	ClearCompletedTasks: key.NewBinding(
+		key.WithKeys("ctrl+x"),
+		key.WithHelp("^x", "clear completed tasks"),
+	),
 	ClearFilter: key.NewBinding(
 		key.WithKeys("ctrl+r"),
 		key.WithHelp("^r", "reset filter"),
@@ -111,6 +116,7 @@ func (k KeyMap) ShortHelpKeys() []key.Binding {
 
 func (k KeyMap) FullHelpKeys() []key.Binding {
 	kb := []key.Binding{
+		k.ClearCompletedTasks,
 		k.CompleteTask,
 		k.DeleteTask,
 		k.FilterToDo,
