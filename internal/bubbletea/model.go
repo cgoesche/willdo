@@ -149,14 +149,39 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, m.list.NewStatusMessage(statusMsg))
 			cmds = append(cmds, m.list.SetItems(l))
 			return m, tea.Batch(cmds...)
-		case key.Matches(msg, m.KeyMap.NextCategory):
-			m.IsFiltering = false
-			m.SelectedCategoryID = 0
+		case key.Matches(msg, m.KeyMap.FilterPrioLow):
+			m.IsFiltering = true
+			m.FilterValue = task.Low
 			l, err := m.Filter(m.FilterValue)
+			statusMsg = "Filtering low priority tasks"
 			if err != nil {
-				return m, m.list.NewStatusMessage(fmt.Sprintf("Failed to filter, %v", err))
+				statusMsg = "Failed to filter"
 			}
-			return m, m.list.SetItems(l)
+			cmds = append(cmds, m.list.NewStatusMessage(statusMsg))
+			cmds = append(cmds, m.list.SetItems(l))
+			return m, tea.Batch(cmds...)
+		case key.Matches(msg, m.KeyMap.FilterPrioMid):
+			m.IsFiltering = true
+			m.FilterValue = task.Medium
+			l, err := m.Filter(m.FilterValue)
+			statusMsg = "Filtering mid priority tasks"
+			if err != nil {
+				statusMsg = "Failed to filter"
+			}
+			cmds = append(cmds, m.list.NewStatusMessage(statusMsg))
+			cmds = append(cmds, m.list.SetItems(l))
+			return m, tea.Batch(cmds...)
+		case key.Matches(msg, m.KeyMap.FilterPrioHigh):
+			m.IsFiltering = true
+			m.FilterValue = task.High
+			l, err := m.Filter(m.FilterValue)
+			statusMsg = "Filtering high priority tasks"
+			if err != nil {
+				statusMsg = "Failed to filter"
+			}
+			cmds = append(cmds, m.list.NewStatusMessage(statusMsg))
+			cmds = append(cmds, m.list.SetItems(l))
+			return m, tea.Batch(cmds...)
 		}
 
 	case tea.WindowSizeMsg:

@@ -51,12 +51,14 @@ func (d *detailsModel) updateSelectedItem(i list.Item) {
 }
 
 func (d detailsModel) renderTaskDetailsSection(i list.Item) string {
-	sectionTitle := styles.TaskDetailSectionTitleStyle.Render("Details")
+	var details string
+	sectionTitle := styles.DetailSectionTitleStyle.Render("Details")
 
 	task, ok := i.(taskListItem)
 	if !ok {
-		return fmt.Sprintf("%s\nID: \nTitle: \nDescription: \n\n", sectionTitle)
+		return fmt.Sprintf("%s\nID: \nTitle: \nDescription: \nPriority \n\n", sectionTitle)
 	}
-	section := fmt.Sprintf("%s\nID: %d\nTitle: %s\nDescription: %s\n\n", sectionTitle, task.Identity(), task.Title(), task.Description())
-	return section
+	details = fmt.Sprintf("%s\nID: %d\nTitle: %s\nDescription: %s\nPriority: %d\n\n",
+		sectionTitle, task.Identity(), task.Title(), task.Description(), task.Priority())
+	return details
 }

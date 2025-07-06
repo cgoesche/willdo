@@ -37,8 +37,7 @@ func NewService(db database.IDatabase) *Service {
 // Initialisez the underlying database and makes sure that
 // the required 'task' table is created
 func (s *Service) InitRepo() error {
-	err := s.repo.Init()
-	return err
+	return s.repo.Init()
 }
 
 func (s *Service) Create(t Task) (int64, error) {

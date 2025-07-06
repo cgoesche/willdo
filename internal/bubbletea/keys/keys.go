@@ -27,8 +27,9 @@ type KeyMap struct {
 	FilterDoing         key.Binding
 	FilterDone          key.Binding
 	FilterFav           key.Binding
-	NextCategory        key.Binding
-	PrevCategory        key.Binding
+	FilterPrioLow       key.Binding
+	FilterPrioMid       key.Binding
+	FilterPrioHigh      key.Binding
 	ResetTask           key.Binding
 	RefreshList         key.Binding
 	StartTask           key.Binding
@@ -47,11 +48,11 @@ var DefaultKeyMap = KeyMap{
 		key.WithHelp("^r", "reset filter"),
 	),
 	CompleteTask: key.NewBinding(
-		key.WithKeys("c", " "),
+		key.WithKeys("c", "C", " "),
 		key.WithHelp("c/␣", "complete task"),
 	),
 	DeleteTask: key.NewBinding(
-		key.WithKeys("d", "backspace"),
+		key.WithKeys("d", "D", "backspace"),
 		key.WithHelp("d", "delete task"),
 	),
 	FilterToDo: key.NewBinding(
@@ -70,16 +71,20 @@ var DefaultKeyMap = KeyMap{
 		key.WithKeys("ctrl+f"),
 		key.WithHelp("^f", "filter favorites"),
 	),
-	NextCategory: key.NewBinding(
-		key.WithKeys("n"),
-		key.WithHelp("n", "next category"),
+	FilterPrioLow: key.NewBinding(
+		key.WithKeys("ctrl+l"),
+		key.WithHelp("^l", "filter low priority tasks"),
 	),
-	PrevCategory: key.NewBinding(
-		key.WithKeys("p"),
-		key.WithHelp("p", "previous category"),
+	FilterPrioMid: key.NewBinding(
+		key.WithKeys("ctrl+j"),
+		key.WithHelp("^j", "filter mid priority tasks"),
+	),
+	FilterPrioHigh: key.NewBinding(
+		key.WithKeys("ctrl+h"),
+		key.WithHelp("^h", "filter high priority task"),
 	),
 	ResetTask: key.NewBinding(
-		key.WithKeys("t"),
+		key.WithKeys("t", "T"),
 		key.WithHelp("t", "mark as todo"),
 	),
 	RefreshList: key.NewBinding(
@@ -87,11 +92,11 @@ var DefaultKeyMap = KeyMap{
 		key.WithHelp("alt-r", "refresh list"),
 	),
 	StartTask: key.NewBinding(
-		key.WithKeys("s"),
+		key.WithKeys("s", "S"),
 		key.WithHelp("s", "start task"),
 	),
 	ToggleFavStatus: key.NewBinding(
-		key.WithKeys("f"),
+		key.WithKeys("f", "F"),
 		key.WithHelp("f", "(un)mark as favorite"),
 	),
 	ToggleDetails: key.NewBinding(
@@ -123,8 +128,9 @@ func (k KeyMap) FullHelpKeys() []key.Binding {
 		k.FilterDoing,
 		k.FilterDone,
 		k.FilterFav,
-		k.NextCategory,
-		k.PrevCategory,
+		k.FilterPrioLow,
+		k.FilterPrioMid,
+		k.FilterPrioHigh,
 		k.ResetTask,
 		k.RefreshList,
 		k.StartTask,
