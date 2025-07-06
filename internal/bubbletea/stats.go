@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	seperator = "•"
+	separator = "•"
 )
 
 type statsBar struct {
@@ -108,5 +108,5 @@ func (s *statsModel) renderStatsBar() string {
 		prog += lipgloss.NewStyle().Foreground(styles.WarningColor).Render(strconv.Itoa(int(s.stats.Progress)) + "%")
 	}
 
-	return fmt.Sprintf("%s %s %s %s %s %s %s", todo, seperator, doing, seperator, done, seperator, prog)
+	return fmt.Sprintf("%s %s %s %s %s %s %s", todo, separator, doing, separator, done, separator, prog)
 }
