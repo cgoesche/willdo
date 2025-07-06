@@ -30,17 +30,18 @@ import (
 )
 
 type model struct {
-	lists        []list.Model
-	selectedList int
-	stats        statsModel
-	details      detailsModel
+	list        list.Model
+	cachedItems []list.Item
+	stats       statsModel
+	details     detailsModel
 
-	CategoryService  *category.Service
-	TaskService      *task.Service
-	Categories       category.Categories
-	CatNameToIDMap   category.CategoryNameToIDMap
-	CatIDToNameMap   category.CategoryIDToNameMap
-	SelectedCategory int64
+	CategoryService    *category.Service
+	TaskService        *task.Service
+	Categories         category.Categories
+	Tasks              task.Tasks
+	CatNameToIDMap     category.CategoryNameToIDMap
+	CatIDToNameMap     category.CategoryIDToNameMap
+	SelectedCategoryID int64
 
 	KeyMap      keys.KeyMap
 	IsFiltering bool
@@ -56,11 +57,10 @@ func InitialModel() model {
 	d := newDetailsModel()
 
 	return model{
-		details:      d,
-		lists:        make([]list.Model, 0),
-		selectedList: 0,
-		ShowDetails:  true,
-		ShowStats:    true,
+		details:     d,
+		list:        list.Model{},
+		ShowDetails: true,
+		ShowStats:   true,
 	}
 }
 
@@ -69,9 +69,10 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var statusMsg string
 	var cmd tea.Cmd
 	cmds := []tea.Cmd{}
-	item := m.lists[m.selectedList].SelectedItem()
+	item := m.list.SelectedItem()
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -80,10 +81,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case key.Matches(msg, m.KeyMap.ToggleDetails):
 			m.ShowDetails = !m.ShowDetails
-			return m, m.lists[m.selectedList].NewStatusMessage("Toggled 'Details' section")
+			return m, m.list.NewStatusMessage("Toggled 'Details' section")
 		case key.Matches(msg, m.KeyMap.ToggleStats):
 			m.ShowStats = !m.ShowStats
-			return m, m.lists[m.selectedList].NewStatusMessage("Toggled 'Statistics' section")
+			return m, m.list.NewStatusMessage("Toggled 'Statistics' section")
 		case key.Matches(msg, m.KeyMap.RefreshList):
 			return m.updateListItems()
 		case key.Matches(msg, m.KeyMap.DeleteTask):
@@ -96,10 +97,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.startTask(item)
 		case key.Matches(msg, m.KeyMap.ResetTask):
 			return m.resetTask(item)
-		case key.Matches(msg, m.KeyMap.FilterFav):
-			m.IsFiltering = true
-			m.FilterValue = task.IsFavorite
-			return m.updateListItems()
+		// Filter key mapping
 		case key.Matches(msg, m.KeyMap.ClearFilter):
 			m.IsFiltering = false
 			m.FilterValue = nil
@@ -107,23 +105,63 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.KeyMap.FilterToDo):
 			m.IsFiltering = true
 			m.FilterValue = task.ToDo
-			return m.updateListItems()
+			l, err := m.Filter(m.FilterValue)
+			statusMsg = "Filtering todo tasks"
+			if err != nil {
+				statusMsg = "Failed to filter"
+			}
+			cmds = append(cmds, m.list.NewStatusMessage(statusMsg))
+			cmds = append(cmds, m.list.SetItems(l))
+			return m, tea.Batch(cmds...)
+		case key.Matches(msg, m.KeyMap.FilterFav):
+			m.IsFiltering = true
+			m.FilterValue = task.IsFavorite
+			l, err := m.Filter(m.FilterValue)
+			statusMsg = "Filtering favorites"
+			if err != nil {
+				statusMsg = "Failed to filter"
+			}
+			cmds = append(cmds, m.list.NewStatusMessage(statusMsg))
+			cmds = append(cmds, m.list.SetItems(l))
+			return m, tea.Batch(cmds...)
 		case key.Matches(msg, m.KeyMap.FilterDoing):
 			m.IsFiltering = true
 			m.FilterValue = task.Doing
-			return m.updateListItems()
+			l, err := m.Filter(m.FilterValue)
+			statusMsg = "Filtering doing tasks"
+			if err != nil {
+				statusMsg = "Failed to filter"
+			}
+			cmds = append(cmds, m.list.NewStatusMessage(statusMsg))
+			cmds = append(cmds, m.list.SetItems(l))
+			return m, tea.Batch(cmds...)
 		case key.Matches(msg, m.KeyMap.FilterDone):
 			m.IsFiltering = true
 			m.FilterValue = task.Done
-			return m.updateListItems()
+			l, err := m.Filter(m.FilterValue)
+			statusMsg = "Filtering done tasks"
+			if err != nil {
+				statusMsg = "Failed to filter"
+			}
+			cmds = append(cmds, m.list.NewStatusMessage(statusMsg))
+			cmds = append(cmds, m.list.SetItems(l))
+			return m, tea.Batch(cmds...)
+		case key.Matches(msg, m.KeyMap.NextCategory):
+			m.IsFiltering = false
+			m.SelectedCategoryID = 0
+			l, err := m.Filter(m.FilterValue)
+			if err != nil {
+				return m, m.list.NewStatusMessage(fmt.Sprintf("Failed to filter, %v", err))
+			}
+			return m, m.list.SetItems(l)
 		}
 
 	case tea.WindowSizeMsg:
 		h, v := styles.DocStyle.GetFrameSize()
-		m.lists[m.selectedList].SetSize(msg.Width-v, msg.Height-(2*h))
+		m.list.SetSize(msg.Width-v, msg.Height-(2*h))
 	}
 
-	m.lists[m.selectedList], cmd = m.lists[m.selectedList].Update(msg)
+	m.list, cmd = m.list.Update(msg)
 	cmds = append(cmds, cmd)
 	return m, tea.Batch(cmds...)
 }
@@ -131,15 +169,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	var content string
 
-	content = m.lists[m.selectedList].View() + "\n"
+	content = m.list.View() + "\n"
 
 	if m.ShowDetails {
-		m.details.updateSelectedItem(m.lists[m.selectedList].SelectedItem())
+		m.details.updateSelectedItem(m.list.SelectedItem())
 		content += m.details.View()
 	}
 
 	if m.ShowStats {
-		m.stats.updateList(m.lists[m.selectedList].Items())
+		m.stats.updateList(m.list.Items())
 		content += m.stats.View()
 	}
 	return styles.DocStyle.Render(content)
@@ -169,50 +207,38 @@ func (m model) getTaskListItemsByCategory(id int64) ([]list.Item, error) {
 	return l, nil
 }
 
-func (m model) getTaskListItemsWithFilter() ([]list.Item, error) {
-	var l []list.Item
-	var catID = m.SelectedCategory
-	if m.ShowAllTasks {
-		catID = -1
-	}
-	tasks, err := m.TaskService.GetAllWithFilter(catID, m.FilterValue)
-	if err != nil {
-		return nil, err
-	}
-
-	l = marshalTaskListItems(tasks)
-	return l, nil
-}
-
 func (m *model) updateListItems() (tea.Model, tea.Cmd) {
 	var l []list.Item
 	var err error
 
 	switch {
-	case m.ShowAllTasks && !m.IsFiltering:
+	case m.ShowAllTasks:
 		l, err = m.getAllTaskListItems()
-	case m.IsFiltering:
-		l, err = m.getTaskListItemsWithFilter()
 	default:
-		l, err = m.getTaskListItemsByCategory(m.SelectedCategory)
+		l, err = m.getTaskListItemsByCategory(m.SelectedCategoryID)
 	}
 
 	if err != nil {
-		return m, m.lists[m.selectedList].NewStatusMessage(fmt.Sprintf("Failed to refresh list, %v", err))
+		return m, m.list.NewStatusMessage(fmt.Sprintf("Failed to refresh list, %v", err))
 	}
-	m.lists[m.selectedList].SetItems(l)
-	return m, m.lists[m.selectedList].NewStatusMessage("List refreshed")
+
+	if m.IsFiltering {
+		m.cachedItems = l
+		l, _ = m.Filter(m.FilterValue)
+	}
+	m.list.SetItems(l)
+	return m, m.list.NewStatusMessage("List refreshed")
 }
 
 func (m model) deleteTask(item list.Item) (tea.Model, tea.Cmd) {
 	task, ok := item.(taskListItem)
 	if !ok {
-		return m, m.lists[m.selectedList].NewStatusMessage("Failed to delete task")
+		return m, m.list.NewStatusMessage("Failed to delete task")
 	}
 
 	_, err := m.TaskService.Delete(task.ID)
 	if err != nil {
-		return m, m.lists[m.selectedList].NewStatusMessage("Failed to delete task")
+		return m, m.list.NewStatusMessage("Failed to delete task")
 	}
 	return m.updateListItems()
 }
@@ -220,7 +246,7 @@ func (m model) deleteTask(item list.Item) (tea.Model, tea.Cmd) {
 func (m model) completeTask(item list.Item) (tea.Model, tea.Cmd) {
 	t, ok := item.(taskListItem)
 	if !ok {
-		return m, m.lists[m.selectedList].NewStatusMessage("Failed to mark task as 'Done'")
+		return m, m.list.NewStatusMessage("Failed to mark task as 'Done'")
 	}
 
 	tsk := unmarshalTaskListItem(t)
@@ -228,7 +254,7 @@ func (m model) completeTask(item list.Item) (tea.Model, tea.Cmd) {
 
 	_, err := m.TaskService.Update(tsk)
 	if err != nil {
-		return m, m.lists[m.selectedList].NewStatusMessage("Failed to mark task as 'Done'")
+		return m, m.list.NewStatusMessage("Failed to mark task as 'Done'")
 	}
 	return m.updateListItems()
 }
@@ -236,7 +262,7 @@ func (m model) completeTask(item list.Item) (tea.Model, tea.Cmd) {
 func (m model) startTask(item list.Item) (tea.Model, tea.Cmd) {
 	t, ok := item.(taskListItem)
 	if !ok {
-		return m, m.lists[m.selectedList].NewStatusMessage("Failed to mark task as 'Doing'")
+		return m, m.list.NewStatusMessage("Failed to mark task as 'Doing'")
 	}
 
 	tsk := unmarshalTaskListItem(t)
@@ -244,7 +270,7 @@ func (m model) startTask(item list.Item) (tea.Model, tea.Cmd) {
 
 	_, err := m.TaskService.Update(tsk)
 	if err != nil {
-		return m, m.lists[m.selectedList].NewStatusMessage("Failed to mark task as 'Doing'")
+		return m, m.list.NewStatusMessage("Failed to mark task as 'Doing'")
 	}
 	return m.updateListItems()
 }
@@ -252,7 +278,7 @@ func (m model) startTask(item list.Item) (tea.Model, tea.Cmd) {
 func (m model) resetTask(item list.Item) (tea.Model, tea.Cmd) {
 	t, ok := item.(taskListItem)
 	if !ok {
-		return m, m.lists[m.selectedList].NewStatusMessage("Failed to mark task as 'Todo'")
+		return m, m.list.NewStatusMessage("Failed to mark task as 'Todo'")
 	}
 
 	tsk := unmarshalTaskListItem(t)
@@ -260,7 +286,7 @@ func (m model) resetTask(item list.Item) (tea.Model, tea.Cmd) {
 
 	_, err := m.TaskService.Update(tsk)
 	if err != nil {
-		return m, m.lists[m.selectedList].NewStatusMessage("Failed to mark task as 'Todo'")
+		return m, m.list.NewStatusMessage("Failed to mark task as 'Todo'")
 	}
 	return m.updateListItems()
 }
@@ -268,7 +294,7 @@ func (m model) resetTask(item list.Item) (tea.Model, tea.Cmd) {
 func (m model) toggleTaskFavStatus(item list.Item) (tea.Model, tea.Cmd) {
 	t, ok := item.(taskListItem)
 	if !ok {
-		return m, m.lists[m.selectedList].NewStatusMessage("Failed to mark task as 'Favorite'")
+		return m, m.list.NewStatusMessage("Failed to mark task as 'Favorite'")
 	}
 
 	var favStatus task.FavoriteFlag
@@ -284,11 +310,11 @@ func (m model) toggleTaskFavStatus(item list.Item) (tea.Model, tea.Cmd) {
 
 	_, err := m.TaskService.Update(tsk)
 	if err != nil {
-		return m, m.lists[m.selectedList].NewStatusMessage("Failed to mark task as 'Favorite'")
+		return m, m.list.NewStatusMessage("Failed to mark task as 'Favorite'")
 	}
 	return m.updateListItems()
 }
 
 func (m model) listTitle() string {
-	return category.GetCategoryNameFromID(m.Categories, m.SelectedCategory)
+	return category.GetCategoryNameFromID(m.Categories, m.SelectedCategoryID)
 }

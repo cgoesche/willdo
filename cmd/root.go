@@ -24,6 +24,7 @@ import (
 	"github.com/cgoesche/willdo/app"
 	"github.com/cgoesche/willdo/cmd/edit"
 	"github.com/cgoesche/willdo/internal/bubbletea"
+	"github.com/cgoesche/willdo/internal/bubbletea/keys"
 	"github.com/cgoesche/willdo/internal/config"
 	"github.com/cgoesche/willdo/internal/database"
 	"github.com/cgoesche/willdo/internal/modules/category"
@@ -79,14 +80,22 @@ var (
 				showAllTasks = true
 			}
 
+			tasks, err := taskService.GetAll()
+			if err != nil {
+				return fmt.Errorf("failed to find any tasks in the database, %v", err)
+			}
+
 			m := bubbletea.InitialModel()
 			m.TaskService = taskService
 			m.CategoryService = catService
 			m.CatNameToIDMap = category.NewCategoryNameToIDMap(cats)
 			m.CatIDToNameMap = category.NewCategoryIDToNameMap(cats)
 			m.Categories = cats
+			m.SelectedCategoryID = categoryID
+			m.Tasks = tasks
+			m.FilterValue = nil
 			m.ShowAllTasks = showAllTasks
-			m.SelectedCategory = categoryID
+			m.KeyMap = keys.DefaultKeyMap
 
 			bubbletea.Run(m)
 

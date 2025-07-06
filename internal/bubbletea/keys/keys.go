@@ -43,7 +43,7 @@ var DefaultKeyMap = KeyMap{
 	),
 	CompleteTask: key.NewBinding(
 		key.WithKeys("c", " "),
-		key.WithHelp("c", "complete task"),
+		key.WithHelp("c/␣", "complete task"),
 	),
 	DeleteTask: key.NewBinding(
 		key.WithKeys("d", "backspace"),
@@ -51,19 +51,19 @@ var DefaultKeyMap = KeyMap{
 	),
 	FilterToDo: key.NewBinding(
 		key.WithKeys("ctrl+t"),
-		key.WithHelp("^t", "show todo tasks"),
+		key.WithHelp("^t", "filter todo tasks"),
 	),
 	FilterDoing: key.NewBinding(
 		key.WithKeys("ctrl+s"),
-		key.WithHelp("^s", "show doing tasks"),
+		key.WithHelp("^s", "filter doing tasks"),
 	),
 	FilterDone: key.NewBinding(
 		key.WithKeys("ctrl+d"),
-		key.WithHelp("^d", "show only done tasks"),
+		key.WithHelp("^d", "filter done tasks"),
 	),
 	FilterFav: key.NewBinding(
 		key.WithKeys("ctrl+f"),
-		key.WithHelp("^f", "show only favorites"),
+		key.WithHelp("^f", "filter favorites"),
 	),
 	NextCategory: key.NewBinding(
 		key.WithKeys("n"),
