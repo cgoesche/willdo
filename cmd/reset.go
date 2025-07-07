@@ -32,7 +32,6 @@ var (
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			db := database.New(conf.Database)
-
 			taskService := task.NewService(db)
 
 			err := taskService.InitRepo()
