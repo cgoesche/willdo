@@ -66,7 +66,7 @@ var (
 			if err != nil {
 				return fmt.Errorf("failed to update category %d, %v", id, err)
 			}
-			fmt.Printf("Category '%s' updated!\n", categoryName)
+			fmt.Println("Category updated!")
 			return nil
 		},
 	}
@@ -77,5 +77,5 @@ func init() {
 	categoryCmd.Flags().StringVarP(&catName, "name", "n", "", "new category name")
 	categoryCmd.Flags().StringVarP(&catDescription, "description", "d", "", "new category description")
 	categoryCmd.MarkFlagsOneRequired("current")
-	categoryCmd.MarkFlagsRequiredTogether("current", "name", "description")
+	categoryCmd.MarkFlagsRequiredTogether("current", "name")
 }

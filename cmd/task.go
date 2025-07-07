@@ -47,7 +47,7 @@ var (
 				return fmt.Errorf("failed to init task service repository, %v", err)
 			}
 
-			if strings.TrimSpace(categoryName) == "" {
+			if len(strings.TrimSpace(categoryName)) == 0 {
 				return fmt.Errorf("category name cannot be an empty string")
 			}
 
@@ -76,7 +76,7 @@ var (
 )
 
 func init() {
-	taskCmd.Flags().StringVarP(&categoryName, "category", "c", category.DefaultCategoryTableName, "task category")
+	taskCmd.Flags().StringVarP(&categoryName, "category", "c", "", "task category")
 	taskCmd.Flags().StringVarP(&t.Title, "title", "t", "", "task title")
 	taskCmd.Flags().StringVarP(&t.Description, "description", "d", "", "task description")
 	taskCmd.Flags().Int64VarP(&t.Status, "status", "s", 0, "task status (e.g. 0, 1, or 2)")

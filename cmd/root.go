@@ -71,7 +71,8 @@ var (
 			}
 
 			var categoryID int64
-			if categoryName != "" {
+			fmt.Printf("Cat: %s\n", categoryName)
+			if len(strings.TrimSpace(categoryName)) > 0 {
 				categoryID = category.GetCategoryIDFromName(cats, categoryName)
 				if categoryID == 0 {
 					return fmt.Errorf("no category found with name '%s'", categoryName)
@@ -117,7 +118,7 @@ func init() {
 
 	rootCmd.Flags().BoolVarP(&showAllTasks, "all", "a", false, "show tasks from all categories")
 	rootCmd.Flags().StringVar(&configFile, "config", "", "configuration file location")
-	rootCmd.Flags().StringVarP(&categoryName, "category", "c", category.DefaultCategoryTableName, "category to list tasks of")
+	rootCmd.Flags().StringVarP(&categoryName, "category", "c", "", "category to list tasks of")
 	rootCmd.MarkFlagsMutuallyExclusive("all", "category")
 
 	rootCmd.AddCommand(categoryCmd)
