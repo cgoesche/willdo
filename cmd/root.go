@@ -71,7 +71,6 @@ var (
 			}
 
 			var categoryID int64
-			fmt.Printf("Cat: %s\n", categoryName)
 			if len(strings.TrimSpace(categoryName)) > 0 {
 				categoryID = category.GetCategoryIDFromName(cats, categoryName)
 				if categoryID == 0 {
