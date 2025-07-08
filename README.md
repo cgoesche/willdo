@@ -216,7 +216,7 @@ willdo category --name "Winter vacation" --description "Task list for our family
 Sets the database type to use. For now only "sqlite" is supported.
 
 `WILLDO_DATABASE_FILEPATH`
-An absolute or relative filepath for the database file.
+An absolute or relative filepath for the database.
 
 `WILLDO_DATABASE_ADDRESS`
 Specifies the network address of the network connected database. (not used)
