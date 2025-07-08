@@ -68,12 +68,6 @@ sudo dnf update
 sudo dnf install make git asciidoctor
 ```
 
-#### macOS
-
-``` Bash
-brew install make git asciidoctor
-```
-
 ### Clone & Build
 
 Once that is done you can clone this repository
