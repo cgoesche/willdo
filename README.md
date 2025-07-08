@@ -235,5 +235,5 @@ Behind the scenes **willdo** uses:
 
 ## License
 
-Taskwarrior is released under the GPLv3 license.
+willdo is released under the GPLv3 license.
 For details check the [LICENSE](LICENSE) file.
