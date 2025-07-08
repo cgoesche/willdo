@@ -13,8 +13,8 @@ willdo - A lightweight and minimal command line task manager
 
 == SYNOPSIS
 
-*willdo* [flags]
-*willdo* [command]
+*willdo* [OPTIONS...]
+*willdo* [COMMAND] [OPTIONS...]
 
 == DESCRIPTION
 
@@ -24,26 +24,181 @@ which is helping to streamline workflows, organization, planning and productivit
 
 == OPTIONS
 
+*-a, --all*::
+Shows tasks from all categories.
+
+*-c, --category _name_*::
+Specifies the name of the category of which tasks have to shown.
+
+*--config="dir"*:: 
+Specifies the location of the configuration file to be used.
+
+*-h, --help*::            
+Prints usage information.
+
+*-v, --version*::          
+Prints version information.
+
+== GENERAL COMMANDS
+
+willdo { category | complete | edit | help | reset | start | task | version } [ARGUMENTS...] [OPTIONS...]
+
+=== category [OPTIONS...]
+Add a category that can be used to group tasks together.
+
+*-d, --description _text_*::
+Sets the category description to _text_.
+
+*-h, --help*::               
+Prints help information for this command.
+
+*-n, --name _name_*::       
+Sets the category name to _name_. This option flag is mandatory and its value can not be an empty string.
+
+=== complete _task_id_
+Complete the task specified by _task_id_.
+
+=== delete { *task* | *category* } [OPTIONS...]
+Delete tasks or categories.
+Available options are:
+
+*-a, --all*::               
+Deletes all categories or tasks.
+
+*-c, --category _name_*::
+Specifies the category to delete with _name_. (only valid with 'category' argument)
+
+*-h, --help*::            
+Prints help information for this command.
+
+*-t, --task _task_id_*::       
+Specifies the task to delete with _task_id_. (only valid with 'task' argument)
+
+=== edit { *task* | *category* } [OPTIONS...] 
+Edit an existing task's or category's properties. Below you will find the 
+available flags for the *task* and *category* arguments.
+
+++++ task
+----
+-h, --help              Prints help information for this command.
+
+-i, --id _task_id_      Specifies the task to edit with _task_id_. This option flag is required.
+
+See the *task* command for the rest of available option flags.
+----
+
+++++ category
+----
+-c, --current _name_            Specifies the category to edit with its current _name_.
+
+-d, --description _text_        Updates the category description with _text_.
+
+-h, --help                      Prints help information for this command.
+
+-n, --name _new_name_           Updates the targeted category's name with _new_name_.
+----
+
+=== help        
+Help about the willdo command.
+
+=== reset _task_id_
+Reset a task, specified by _task_id_, status property to 0 (todo).
+
+=== start _task_id_    
+Start a task specified by _task_id_.
+
+=== task [OPTIONS...]  
+Add a task and define its properties.
+
+*-c, --category _name_*::      
+Sets the task category property to _name_.
+
+*-d, --description _text_*::   
+Sets the task description to _text_.
+  
+*-f, --favorite _n_*::         
+Mark or unmark task as favorite. The default value is -1, and valid values for _n_ are 0 (false) and 1 (true).
+
+*-h, --help*::                 
+Prints help information for this command.
+
+*-i, --id _task_id_*::               
+Specifies the task to edit with _task_id_. This option flag is required.
+
+*-p, --priority _n_*::         
+Sets the task priority property. The default is -1, and valid values for _n_ are 0 (low), 1 (medium), and 2 (high).
+
+*-s, --status _n_*::           
+Sets the task status property. The default is -1, and valid values for _n_ are 0 (todo), 1 (doing), and 2 (done).
+
+*-t, --title _title_*::         
+Sets the task title to _title_. This option flag is mandatory and its value can not be an empty string.
+
+=== version    
+Print willdo version.
 
 == ENVIRONMENT VARIABLES
 
 *WILLDO_DATABASE_TYPE*::
-This is returned by the account and auth services. 
+Sets the database type to use. For now only "sqlite" is supported.
 
 *WILLDO_DATABASE_FILEPATH*::
-This is returned by the setcred function. 
+An absolute or relative filepath for the database file.
 
 *WILLDO_DATABASE_ADDRESS*::
-This is returned by the account and auth services. 
+Specifies the network address of the network connected database. 
 
 *WILLDO_DATABASE_PORT*::
-This is returned by the setcred function. 
+Specifies the listen port of the network connected database.
+
+== Key bindings
+
+* c, spacebar - complete task
+* d, D - delete task
+* f, F - (un)mark as favorite
+* s, S - start task
+* t, T - mark as todo
+* q - quit
+* ? open/close - help
+
+* ctrl-d - filter done tasks
+* ctrl-f - filter favorites
+* ctrl-h - filter high priority task
+* ctrl-j - filter mid priority tasks
+* ctrl-l filter low priority tasks
+* ctrl-s filter doing tasks
+* ctrl-t filter todo tasks
+* ctrl-x clear completed tasks 
+
+* alt-r refresh list
+* alt-d show/hide details
+* alt-s show/hide stats
+
+== Navigation
+
+* g, home - go to start
+* G, end - go to end 
+* ←, h, pgup - prev page 
+* ↓, j - down
+* ↑, k - up 
+* →, l, pgdn - next page
 
 == EXAMPLES
 
+*Add a task*::
 willdo task -c "My List" -t "Review all PRs tagged with 'proposal' and 'enhancement'" -f 1
 
+*Edit category name*::
 willdo edit category -c "My List" -n "Personal List"
+
+*Edit task priority*::
+willdo edit task --id 3 --priority 2
+
+*List tasks of a specific category*::
+willdo -c "Personal List"
+
+*Add a category*::
+willdo category --name "Winter vacation" --description "Task list for our family vacation to Aspen"
 
 == AUTHOR
 
