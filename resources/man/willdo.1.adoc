@@ -200,6 +200,14 @@ willdo -c "Personal List"
 *Add a category*::
 willdo category --name "Winter vacation" --description "Task list for our family vacation to Aspen"
 
+== FILES
+
+*Configuration file*::
+$HOME/.config/willdo/config.yaml
+
+*SQLite database*::
+$HOME/willdo.db
+
 == AUTHOR
 
 willdo was written by Christian Goeschel Ndjomouo <cgoesc2@wgu.edu>.
