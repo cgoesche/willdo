@@ -42,7 +42,7 @@ var (
 	categoryID   int64
 	categoryName string
 	showAllTasks bool
-	conf         config.Config
+	conf         = config.SetDefault()
 
 	rootCmd = &cobra.Command{
 		Use:     "willdo",
