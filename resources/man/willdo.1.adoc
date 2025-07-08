@@ -1,0 +1,54 @@
+//po4a: entry man manual
+= willdo(1)
+:doctype: manpage
+:man manual: General commands (tools and utilities)
+:man source: willdo {release-version}
+:lib: willdo
+:firstversion: 0.1
+:page-layout: base
+
+== NAME
+
+willdo - A lightweight and minimal command line task manager
+
+== SYNOPSIS
+
+*willdo* [flags]
+*willdo* [command]
+
+== DESCRIPTION
+
+*willdo* is a fast, lightweight and minimal task manager aimed at terminal habitants who need an easy to use command line tool 
+that helps to keep track of tasks and ideas without getting too much in the way and focusing on what is really important, 
+which is helping to streamline workflows, organization, planning and productivity without the need of a bloated GUI.
+
+== OPTIONS
+
+
+== ENVIRONMENT VARIABLES
+
+*WILLDO_DATABASE_TYPE*::
+This is returned by the account and auth services. 
+
+*WILLDO_DATABASE_FILEPATH*::
+This is returned by the setcred function. 
+
+*WILLDO_DATABASE_ADDRESS*::
+This is returned by the account and auth services. 
+
+*WILLDO_DATABASE_PORT*::
+This is returned by the setcred function. 
+
+== EXAMPLES
+
+willdo task -c "My List" -t "Review all PRs tagged with 'proposal' and 'enhancement'" -f 1
+
+willdo edit category -c "My List" -n "Personal List"
+
+== AUTHOR
+
+willdo was written by Christian Goeschel Ndjomouo <cgoesc2@wgu.edu>.
+
+== REPORTING BUGS
+
+For bug reports, open an issue here: https://github.com/cgoesche/willdo/issues.
