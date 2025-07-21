@@ -58,14 +58,22 @@ After that you will have to install the following dependencies:
 
 ``` Bash
 sudo apt update
-sudo apt install make git asciidoctor
+sudo apt install make git go asciidoctor
 ```
 
 #### Fedora, RHEL, centOS
 
 ``` Bash
 sudo dnf update
-sudo dnf install make git asciidoctor
+sudo dnf install make git go asciidoctor
+```
+
+#### OpenSUSE Leap , Thumbleweed
+``` Bash
+sudo zypper update
+sudo zypper install make git go
+sudo gem update
+sudo gem install asciidoctor
 ```
 
 ### Clone & Build
